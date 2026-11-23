@@ -157,3 +157,10 @@ td.dt{white-space:nowrap;color:var(--muted)}
 .pl-day .av-open{color:var(--ok)}
 .pl-day .av-recover,.pl-day .av-none{color:var(--c3)}
 .pl-row{grid-template-columns:3.6rem 1fr auto}
+/* two-row nav: pages on top, this page's sections below */
+.nav{flex-wrap:wrap;row-gap:4px}
+.subnav{flex-basis:100%;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin:0 -6px;padding-top:2px;border-top:1px solid var(--line)}
+.subnav::-webkit-scrollbar{display:none}
+.subnav a{text-decoration:none;font-size:13px;color:var(--muted);padding:5px 9px;border-radius:999px;white-space:nowrap}
+.subnav a:hover{background:var(--panel);color:var(--fg)}
+html{scroll-padding-top:100px}
