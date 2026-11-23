@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wheel Climbs — training & ticks</title>
+<meta name="description" content="Will's climbing ticks, grade pyramid, training plan and to-do list.">
+<meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M2 28 12 8l5 9 4-6 9 17z' fill='%23c2562b'/></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="nav" aria-label="Sections">
+  <a class="brand" href="#top">Wheel<span>Climbs</span></a>
+  <div class="links">
+    <a href="#plan">Plan</a><a href="#targets">Targets</a><a href="#todo">To-do</a><a href="#progression">Progress</a><a href="#ticks">Ticks</a>
+  </div>
+</nav>
+
+<main class="wrap" id="top">
+  <header class="hero">
+    <p class="eyebrow">Road back to 5.12 · Fall/winter 2026–27</p>
+    <h1>Climbing training</h1>
+    <p class="lede"><b data-f="total">—</b> logged ticks from <span data-f="first_year">—</span> to <span data-f="last_year">—</span>. Hardest send: <b data-f="hardest_route">—</b> (<span data-f="hardest">—</span>, <span data-f="hardest_year">—</span>). Some years are light because those ticks live in paper guidebooks.</p>
+  </header>
+
+  <section class="tiles">
+    <div class="tile"><div class="lab">Logged ticks</div><div class="num" data-f="total">—</div><div class="sub">All years, all types</div></div>
+    <div class="tile"><div class="lab">Hardest redpoint</div><div class="num" data-f="hardest">—</div><div class="sub" data-f="hardest_route">—</div></div>
+    <div class="tile"><div class="lab">5.11+ clean leads</div><div class="num" data-f="hard_sends">—</div><div class="sub">Onsight, flash or redpoint</div></div>
+    <div class="tile"><div class="lab">Onsight / flash share</div><div class="num" data-f="onsight_pct">—</div><div class="sub">Of leads with a style logged</div></div>
+    <div class="tile"><div class="lab">Ticks in <span data-f="last_year">—</span></div><div class="num" data-f="latest_n">—</div><div class="sub">Best: <span data-f="recent_best">—</span></div></div>
+  </section>
+
+  <section class="card plan" id="plan">
+    <h2>Road back to 5.12</h2>
+    <p class="note">Last 5.12 send: <b data-f="last12_route">—</b> in <span data-f="last12_year">—</span>. The 5.12s came at the end of seasons packed with 5.11 redpoints at Clear Creek, so the plan rebuilds that base first.</p>
+    <ol class="phases">
+      <li><span class="when">This fall</span><b>Finish Free Willie and own 5.10.</b> Get back on it in the next session or two — it's already gone clean on toprope. Fill the rest of each day with 5.10b–d onsights to rebuild clipping rhythm and fall comfort.</li>
+      <li><span class="when">Winter</span><b>Strength block.</b> Two indoor days a week of limit bouldering plus a simple hangboard routine, with kettlebell work as the general base. Use sunny days at Clear Creek or the Golden Cliffs for 5.11a/b redpoints.</li>
+      <li><span class="when">Spring</span><b>Volume at 5.11.</b> Several 5.11a–c redpoints in Clear Creek. In 2019 a run of 5.11 redpoints came right before Badgersaurus and Hellbender.</li>
+      <li><span class="when">Late spring → summer</span><b>One 5.12a project.</b> A steep, bolt-close Clear Creek line in a style already sent before. Siege it on fresh days, two or three goes per day max.</li>
+    </ol>
+  </section>
+
+  <section class="card" id="targets">
+    <h2>Fall/winter targets</h2>
+    <p class="note">New clean leads (onsight, flash or redpoint) from Oct 1 through Feb 28, each route counted once.</p>
+    <div id="target-chart"></div>
+  </section>
+
+  <section class="card" id="todo">
+    <h2>To-do list</h2>
+    <p class="note">Mountain Project classics not yet led: trad 5.7–5.10, sport 5.9+–5.11a. Each checks off when a clean lead shows up in the ticks.</p>
+    <div class="tools">
+      <div class="seg" id="todo-disc" role="group" aria-label="Discipline"><button data-v="Sport" aria-pressed="true">Sport</button><button data-v="Trad" aria-pressed="false">Trad</button></div>
+      <div class="seg" id="todo-area" role="group" aria-label="Area"><button data-v="Clear Creek" aria-pressed="true">Clear Creek</button><button data-v="North Table" aria-pressed="false">North Table</button><button data-v="Boulder Canyon" aria-pressed="false">Boulder Cyn</button></div>
+    </div>
+    <div class="lab" id="todo-count"></div>
+    <div id="todo-list"></div>
+  </section>
+
+  <section class="card" id="by-year">
+    <div class="head">
+      <div><h2>Ticks by year</h2><p class="note">Stacked by route type. Tap a bar to filter the progression chart and tick list to that year.</p></div>
+      <div class="seg" id="year-metric" role="group" aria-label="Measure"><button data-v="ticks" aria-pressed="true">Ticks</button><button data-v="pitches" aria-pressed="false">Pitches</button></div>
+    </div>
+    <div class="legend" id="year-legend"></div>
+    <div class="chart" id="year-chart"><div class="tip"></div></div>
+  </section>
+
+  <section class="card" id="progression">
+    <div class="head">
+      <div><h2>Grade progression</h2><p class="note">Every roped tick by date and grade, colored by how it went. The line is the hardest clean lead each year.</p></div>
+      <button class="chip" id="year-chip" hidden></button>
+    </div>
+    <div class="legend" id="prog-legend"></div>
+    <div class="chart" id="prog-chart"><div class="tip"></div></div>
+  </section>
+
+  <div class="grid">
+    <section class="card" id="pyramid">
+      <div class="head">
+        <div><h2>Grade pyramid</h2><p class="note">Clean leads (filled) against all roped ticks per grade band.</p></div>
+        <div class="seg" id="pyr-type" role="group" aria-label="Route type"><button data-v="all" aria-pressed="true">All</button><button data-v="Sport" aria-pressed="false">Sport</button><button data-v="Trad" aria-pressed="false">Trad</button></div>
+      </div>
+      <div id="pyr-chart"></div>
+    </section>
+    <section class="card" id="areas">
+      <h2>Where you climb</h2><p class="note">Ticks per area, with the share that were clean leads.</p>
+      <div id="area-chart"></div>
+    </section>
+  </div>
+
+  <section class="card" id="ticks">
+    <h2>All ticks</h2><p class="note">Search by route, crag or grade. Tap a column to sort; tap a route to open it on Mountain Project.</p>
+    <div class="tools"><input id="tick-q" type="search" placeholder="Search ticks" aria-label="Search ticks"><button class="chip" id="tick-chip" hidden></button><span class="lab" id="tick-count"></span></div>
+    <div class="tbox">
+      <table id="tick-table">
+        <thead><tr>
+          <th><button data-k="date">Date</button></th>
+          <th><button data-k="route">Route</button></th>
+          <th><button data-k="code">Grade</button></th>
+          <th><button data-k="ascent">Ascent</button></th>
+          <th class="hide-sm"><button data-k="type">Type</button></th>
+          <th class="hide-sm"><button data-k="crag">Crag</button></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="foot">Data: Mountain Project tick export, last updated <span id="updated">—</span>. Guidebook-only ticks aren't included.</footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
