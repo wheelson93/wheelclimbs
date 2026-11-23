@@ -164,3 +164,6 @@ td.dt{white-space:nowrap;color:var(--muted)}
 .subnav a{text-decoration:none;font-size:13px;color:var(--muted);padding:5px 9px;border-radius:999px;white-space:nowrap}
 .subnav a:hover{background:var(--panel);color:var(--fg)}
 html{scroll-padding-top:100px}
+/* Home Screen app: keep the nav clear of the notch / status bar */
+.nav{padding-top:max(10px,env(safe-area-inset-top));padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
+body{padding-bottom:env(safe-area-inset-bottom)}
