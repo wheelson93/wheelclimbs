@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Wheel Climbs — strength & mobility</title>
+<meta name="description" content="Will's strength, hangboard and mobility benchmarks, logged from Strava.">
+<meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M2 28 12 8l5 9 4-6 9 17z' fill='%23c2562b'/></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Climbs">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>if(navigator.standalone||matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches)document.documentElement.classList.add("app")</script>
+<link rel="stylesheet" href="style.css?v=7">
+</head>
+<body>
+<nav class="nav" aria-label="Sections">
+  <a class="brand" href="./">Wheel<span>Climbs</span></a>
+  <div class="links">
+    <a href="plan.html">This week</a><a href="./">Climbing</a><a href="aerobic.html">Aerobic</a><a href="strength.html" class="on">Strength</a>
+  </div>
+  <div class="subnav"><a href="#benchmarks">Benchmarks</a><a href="#mobility">Mobility</a><a href="#sessions">Sessions</a><a href="#volume">Volume</a><a href="#history">History</a><a href="#howto">How to log</a></div>
+</nav>
+
+<main class="wrap" id="top">
+  <header class="hero">
+    <p class="eyebrow">Strength · hangboard · mobility</p>
+    <h1>Strong enough</h1>
+    <p class="lede" id="lede">—</p>
+  </header>
+
+  <section class="tiles" id="tiles"></section>
+
+  <section class="card" id="benchmarks">
+    <div class="head">
+      <div><h2>Benchmarks</h2><p class="note">Best logged effort against each target. Pulling and fingers drive the climbing; push, core and legs keep you balanced and durable.</p></div>
+    </div>
+    <div class="bm-grid" id="bm"></div>
+  </section>
+
+  <div class="grid">
+    <section class="card" id="mobility">
+      <h2>Mobility checks</h2>
+      <p class="note">Test monthly. Shows the latest result, not the best.</p>
+      <div id="mob"></div>
+      <div class="retest" id="mobdue"></div>
+    </section>
+    <section class="card" id="sessions">
+      <h2>Recent sessions</h2>
+      <p class="note">Strength and workout sessions from Strava, with the exercises read from each description.</p>
+      <div id="sess"></div>
+    </section>
+  </div>
+
+  <div class="grid">
+    <section class="card" id="volume">
+      <h2>Weekly volume</h2>
+      <p class="note">Working sets per week by area, last 12 weeks. Numbers above the bars are sessions.</p>
+      <div class="legend" id="vol-legend"></div>
+      <div class="chart" id="vol-chart"><div class="tip"></div></div>
+    </section>
+    <section class="card" id="history">
+      <div class="head">
+        <div><h2>Exercise history</h2><p class="note" id="hist-note">Best set per session.</p></div>
+        <select id="hist-pick" class="pick" aria-label="Exercise"></select>
+      </div>
+      <div class="chart" id="hist-chart"><div class="tip"></div></div>
+    </section>
+  </div>
+
+  <section class="card" id="howto">
+    <h2>How to log</h2>
+    <p class="note">After a session, open it in Strava and type one exercise per line in the description: <b>name, load, sets × reps</b>. The nightly sync reads it. Edits within a week are picked up too.</p>
+    <div class="howgrid">
+      <pre class="logex" id="logex">hang, 20mm, +10lb, 6x10s
+pull-ups, +25lb, 3x5
+ring dips, bw, 3x10
+OHP, 24kg, 3x5/arm
+L-sit, 3x20s
+ab wheel, 3x10
+side plank, 2x45s/side
+single leg RDL, 24kg, 3x8/side
+ham curl single, 3x8/side
+cossack squat, 16kg, 3x8/side
+pancake 25cm
+high step pass</pre>
+      <ul class="howlist">
+        <li><b>Load:</b> <code>24kg</code>, <code>+10lb</code> (added to bodyweight), <code>bw</code>, or <code>-20lb</code> for assistance.</li>
+        <li><b>Dose:</b> <code>3x8</code>, <code>3x20s</code> for holds, <code>12/10/8</code> for uneven sets, or a single <code>8 reps</code> / <code>45s</code>.</li>
+        <li><b>Sides:</b> add <code>/side</code>, <code>/leg</code> or <code>/arm</code>.</li>
+        <li><b>Hangboard:</b> add the edge, like <code>20mm</code>. Hangs default to seconds.</li>
+        <li><b>Variants:</b> <code>ab wheel standing</code>, <code>ham curl single</code>.</li>
+        <li><b>Mobility:</b> a distance (<code>pancake 25cm</code>), <code>pass</code> / <code>not yet</code>, or a level (<code>toe touch palms</code>).</li>
+        <li>Anything else, like "bicep curl 12kg 3x10", is still logged and charted.</li>
+      </ul>
+    </div>
+    <button class="chip" id="copyex" type="button">Copy example</button>
+  </section>
+
+  <footer class="foot">Data: Strava descriptions, updated <span id="updated">—</span>. Bodyweight <span id="bw">—</span> from your Strava profile.</footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="strength.js"></script>
+<nav class="tabbar" aria-label="Pages"><a href="plan.html"><span class="ti" aria-hidden="true">🗓️</span><span>This week</span></a><a href="./"><span class="ti" aria-hidden="true">🧗</span><span>Climbing</span></a><a href="aerobic.html"><span class="ti" aria-hidden="true">🫀</span><span>Aerobic</span></a><a href="strength.html" aria-current="page"><span class="ti" aria-hidden="true">💪</span><span>Strength</span></a></nav>
+<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>

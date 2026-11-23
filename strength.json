@@ -1,0 +1,11 @@
+{
+ "updated": "2026-11-23",
+ "bodyweight_kg": 81.2,
+ "bodyweight_source": "Strava profile",
+ "sessions": [
+  {"id": "20914207776", "date": "2026-11-08", "name": "Afternoon Weight Training", "sport": "WeightTraining", "minutes": 39.1},
+  {"id": "20425395997", "date": "2026-10-02", "name": "Afternoon Weight Training", "sport": "WeightTraining", "minutes": 27.5},
+  {"id": "20247134760", "date": "2026-09-19", "name": "Afternoon Weight Training", "sport": "WeightTraining", "minutes": 5.7},
+  {"id": "18868848975", "date": "2026-06-09", "name": "Night Workout", "sport": "Workout", "minutes": 6.1}
+ ]
+}

@@ -9,10 +9,13 @@ Needs three repo secrets: STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_REFRESH
   and updates the aerobic threshold from the latest one.
 - Scores any activity named "threshold test" / "AnT test" (30-min all-out effort) and sets AnT
   to the average HR of the last 20 minutes.
+- Reads the description of each strength / workout session and parses one exercise per line
+  (see strength_log.py) into strength.json, which drives the Strength page.
 Existing entries (including hand-made ones) are kept; nothing is deleted.
 """
 import json, os, re, statistics, sys, time, urllib.parse, urllib.request
 from datetime import date, datetime, timedelta
+from strength_log import parse_description
 
 API = "https://www.strava.com/api/v3"
 AEROBIC = {"Run", "TrailRun", "VirtualRun", "Walk", "Hike", "StairStepper", "Elliptical", "Snowshoe",
@@ -152,7 +155,48 @@ def main():
     data["source"] = "Strava API (nightly sync)"
     with open("aerobic.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=1, ensure_ascii=False)
+    sync_strength(raw, OTHER, tok)
     print(f"Strava: {len(raw)} activities scanned · {new} new aerobic · AeT {T['aet']} · AnT {T['ant']}")
+
+
+def sync_strength(raw, other, tok, path="strength.json"):
+    """Parse exercise lines from strength-session descriptions into strength.json."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            S = json.load(f)
+    except FileNotFoundError:
+        S = {"bodyweight_kg": 81.2, "sessions": []}
+    try:  # needs profile:read_all; falls back to the stored weight
+        w = http(f"{API}/athlete", token=tok).get("weight")
+        if w:
+            S["bodyweight_kg"], S["bodyweight_source"] = round(w, 1), "Strava profile"
+    except Exception as e:  # noqa: BLE001
+        print(f"::notice::Couldn't read bodyweight from Strava ({e}); keeping {S.get('bodyweight_kg')} kg")
+    bw = S.get("bodyweight_kg")
+    cache = {x["id"]: x for x in S.get("sessions", [])}
+    recent = (date.today() - timedelta(days=7)).isoformat()
+    oldest = (date.today() - timedelta(days=365)).isoformat()
+    calls = 0
+    for r in raw:
+        sport = r.get("sport_type") or r.get("type")
+        if other.get(sport) not in ("strength", "mobility") or r.get("elapsed_time", 0) >= 14400:
+            continue
+        aid, d = str(r["id"]), r["start_date_local"][:10]
+        x = cache.get(aid, {"id": aid})
+        x.update(date=d, name=r.get("name", ""), sport=sport, minutes=round(r.get("moving_time", 0) / 60, 1))
+        # Fetch the description once, and again for a week in case it's edited after the workout.
+        if (("entries" not in x and d >= oldest) or d >= recent) and calls < 80:
+            det = http(f"{API}/activities/{aid}", token=tok)
+            calls += 1
+            x["entries"], x["skipped"] = parse_description(det.get("description") or "", bw)
+            time.sleep(0.5)
+        cache[aid] = x
+    S["sessions"] = sorted(cache.values(), key=lambda a: a["date"], reverse=True)
+    S["updated"] = date.today().isoformat()
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(S, f, indent=1, ensure_ascii=False)
+    n = sum(len(x.get("entries", [])) for x in S["sessions"])
+    print(f"Strength: {len(S['sessions'])} sessions · {n} exercise lines parsed · {calls} descriptions fetched")
 
 
 if __name__ == "__main__":
