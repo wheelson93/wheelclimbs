@@ -53,23 +53,40 @@
   const REST = (t, det) => ({ kind: 'rest', title: t || 'Rest', detail: det || 'Off, or an easy walk. Good day for mobility (hips, shoulders) and, if fingers feel good, the Abrahangs protocol: 10 min of 10 s hangs across grips at very easy effort, feet on the ground.' });
   // Strength: pick the two areas trained least recently (from strength.json), so the benchmarks move evenly.
   const fingersOnWall = ['prep1', 'base1', 'base2', 'base3', 'build2'].includes(phase.key);
-  // Strength-day areas, built from the training app's Conditioning workouts (names match the app).
-  // Base phases run 6 × 4 strength sets; build phases switch pulling to 3 × 4 max-strength negatives.
+  // Strength-day areas, built from the training app's Conditioning workouts and circuits (names match the app).
+  // Base phases run 4 × 6 strength sets; build phases switch pulling to max-strength negatives and power pulls.
   const buildPhase = ['build1', 'build2'].includes(phase.key);
+  const fallBuild = ['base3', 'build2', 'taper2', 'peak2'].includes(phase.key);
+  const sBlk = Math.ceil(WK.weekNo / 4), oddWk = WK.weekNo % 2 === 1;
+  const easyCore = deload || ['taper', 'peak', 'recover'].includes(phase.type);
+  const early = ['fall', 'prep1'].includes(phase.key) || (phase.key === 'base1' && sBlk === 1);
+  const midCore = phase.key === 'base1';
+  const coreTxt = easyCore ? 'Floor Core Conditioning 1 (crunches, side plank crunches, plank, lower ab crunches; 2 rounds, 10 s between)'
+    : early ? `${WK.weekNo <= 2 ? 'Core – Bar Build 1' : 'Core – Bar Build 2'} on the bar (bent-knee lever raises, window wipers, L-sit, leg raises; 2 rounds), then Core – 3 on the floor (one-leg plank, press ups, boat pose, crunches, side plank; 2 rounds, 10 s between)`
+    : midCore ? 'Core – Bar Strength 1 on the bar (leg raises, L-sit, window wipers, lever raises; 2 rounds), then Floor Core 1 (V-sits, hollow hold, weighted crunches, weighted side plank, KB twists; 2 rounds)'
+    : `Core – Bar Strength 2 on the bar (bigger reps and longer L-sits; 2 rounds), then ${oddWk ? 'Floor Core 2 (V-sits, 60 s hollow hold, weighted crunches, 60 s weighted side plank, KB twists; 2 rounds)' : 'Core 8 (leg raises, weighted crunches, lower ab crunches, twisting crunches, back arch; 3 rounds, 10 s between)'}`;
+  const pullWarm = fallBuild ? '1 Arm Activations (one-arm engagement isometrics and lifts, 4 × 7 s each arm)' : 'Activations (two-arm engagement isometrics and lifts, 4 × 7 s each)';
+  const pullMain = buildPhase ? 'Negatives – Max Strength 4 × 3 (weighted, 5 s down), then Power Pull Ups 4 × 3 (fast, moderate effort, 3 min rest)'
+    : sBlk % 2 === 0 ? 'Vacuum Backed: Bent Over Row, Wide Pull Ups, Bent Over Fly, 4 × 6 each, 3 min rest'
+    : 'Pull Ups – Strength 4 × 6 (add weight once 6 are easy), Low Row – Strength 4 × 6';
+  const pushTxt = oddWk ? 'Bullet Proof Shoulders: Arnold Press, Leaning Shoulder Shrug, Prone Shoulder Rotations 4 × 6 each, then a prone pec stretch 3 × 30 s'
+    : 'Compression Strength: Bench Press 4 × 6, Incline Chest Press 4 × 6, Lock Offs 4 × 10 s, 3 min rest';
+  const legsTxt = buildPhase ? 'Power Generation legs: Countermovement Jumps 4 × 3 (fast, full rest), then Goblet Squat – Strength 4 × 6'
+    : sBlk % 3 === 2 ? 'Tension Builder: Rack Pull 4 × 6, Overhead Squat 4 × 6 (light, for position), Low Row 4 × 6, 3 min rest'
+    : sBlk % 3 === 0 ? 'Powerlifting, legs only: Deadlift 4 × 6, Back Squat 4 × 6, 3 min rest'
+    : 'Goblet Squat – Strength 4 × 6, Kettlebell Swings – Strength 4 × 6, TRX Hamstring Curl 4 × 6';
+  const forearmTxt = oddWk ? 'Heavy Roller Extensor 3 × 10' : 'Forearm Dumbbell Curls (flexor and extensor curls, 3 × 10 each, 60 s rest)';
   const AREAS = {
-    pull: [fingersOnWall ? 'pull' : 'fingers + pull', (fingersOnWall ? '' : 'hangboard 6×10 s on 20 mm, ')
-      + 'Two Arm Engagement 4 × 10 s to warm up, then '
-      + (buildPhase ? 'Negatives – Max Strength 4 × 3 (weighted, 5 s down)' : 'Pull Ups – Strength 4 × 6 (add weight once 6 are easy)')
-      + ', Low Row – Strength 4 × 6'],
-    push: ['push', 'Press Ups – Strength 4 × 6, Bar Dips – Strength 4 × 6, Face Pulls – Strength 4 × 6 for the shoulders'],
-    core: ['core', 'Ab Wheel Roll Out 4 × 10 (kneeling, standing when easy), Hollow Body Hold 4 × 30 s, Copenhagen Plank 4 × 30 s/side'],
-    legs: ['legs', 'Goblet Squat – Strength 4 × 6, Kettlebell Swings – Strength 4 × 6, TRX Hamstring Curl 4 × 6'],
+    pull: [fingersOnWall ? 'pull' : 'fingers + pull', (fingersOnWall ? '' : 'hangboard 6×10 s on 20 mm, ') + pullWarm + ', then ' + pullMain],
+    push: ['push', pushTxt],
+    core: ['core', coreTxt],
+    legs: ['legs', legsTxt],
   };
   const lastDone = {};
   ((ST && ST.sessions) || []).forEach((x) => (x.entries || []).forEach((e) => { if (AREAS[e.cat] && (!lastDone[e.cat] || x.date > lastDone[e.cat])) lastDone[e.cat] = x.date; }));
   const focus = Object.keys(AREAS).sort((a, b) => (lastDone[a] || '0').localeCompare(lastDone[b] || '0')).slice(0, 2);
   const KB = { kind: 'strength', title: `Strength · ${focus.map((k) => AREAS[k][0]).join(' + ')}${deload ? ' · deload' : ''}`,
-    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : '~40 min. '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Finish with Heavy Roller Extensor 3 × 10 for the forearms. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
+    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : 'About 50 min. '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Finish with ${forearmTxt} for the forearms. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
   // Climbing sessions per phase, named after the Lattice session library. Arrays are [c1, out] or [c1, c2, out].
   // Fingerboard work goes first in a session (before climbing); weights live on the separate strength day.
   const C = (title, detail) => ({ kind: 'climb', title, detail });
@@ -142,6 +159,8 @@
   if (testWeek) climb[0] = C('Test session', 'Fresh day, long warm-up with recruitment hangs. 1) Half crimp max hang (app: Half 4 – Hang – Max Test): 7 s on 20 mm, adding weight each go, up to 8 goes with 3 min rest; note the most you held. 2) Front-three open, same protocol, 4–6 goes. 3) 2-rep-max pull-up: up to 8 sets of 2, 3 min rest. 4) 60% repeaters: 60% of your two-arm half-crimp max (bodyweight plus added load), 7 s on / 3 s off until you can\'t hold; count reps (each rep is 10 s, so reps = total time ÷ 10). 5) Side split, once warm. Log each on its own line in Strava: "max hang test half 20mm +45lb", "max hang test f3 20mm +25lb", "2RM pull-up +50lb", "repeater test 24 reps", "side split 150cm".');
   // Deload week: roughly half volume, nothing to failure.
   climb.forEach((c) => (c.hard = c.title === 'Exum Ridge' || !/ARC|Open climbing|Fun climbing|Easy gym/.test(c.title)));
+  const CAL = '10-Minute Calisthenics first (easy, 30 s on / 30 s off: hips, thoracic spine, shoulders). ';
+  climb = climb.map((c) => (c.hard && !/Exum Ridge|Test session|Outdoor|redpoint|multipitch|mountain|Project day|Project burns/i.test(c.title) ? { ...c, detail: CAL + c.detail } : c));
   if (deload) climb = climb.map((c) => c.title === 'Test session' ? c : ({ ...c, title: c.title + ' · deload', detail: `Deload week: if you're feeling run down, swap this for ${AB.fiveThree}. Otherwise about half the usual sets and nothing to failure; stop feeling fresh. ` + c.detail }));
   // ---------- schedule around work (availability.json from the calendar) ----------
   const LONG_ = LONG, TEST = testDue ? DRIFT : Z2(midMin);

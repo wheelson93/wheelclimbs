@@ -32,8 +32,8 @@ CATALOG = [
     ("ring_row", "Ring row", "pull", "bw", r"\b(ring|trx|inverted)\s*rows?\b"),
     ("face_pull", "Face pull", "pull", "ext", r"\bface\s*pulls?\b"),
     ("ring_dip", "Ring dip", "push", "bw", r"\bdips?\b"),
-    ("ohp", "Overhead press", "push", "ext", r"\b(overhead|military|kb|kettlebell|strict)\s*press\b|\bohp\b"),
-    ("pushup", "Push-up", "push", "bw", r"\bpush[\s-]?ups?\b"),
+    ("ohp", "Overhead press", "push", "ext", r"\b(overhead|military|kb|kettlebell|strict|shoulder|arnold|push)\s*press\b|\bohp\b"),
+    ("pushup", "Push-up", "push", "bw", r"\b(push|press)[\s-]?ups?\b"),
     ("lsit", "L-sit", "core", "bw", r"\bl[\s-]?sit\b"),
     ("abwheel", "Ab wheel", "core", "bw", r"\bab\s*wheel|\brollouts?\b"),
     ("t2b", "Toes-to-bar", "core", "bw", r"\btoes[\s-]*to[\s-]*bar\b|\bt2b\b|\bttb\b"),
@@ -42,10 +42,21 @@ CATALOG = [
     ("copenhagen", "Copenhagen plank", "core", "bw", r"\bcopenhagen\b"),
     ("negative", "Pull-up negative", "pull", "bw", r"\bnegatives?\b"),
     ("low_row", "Low row", "pull", "ext", r"\b(low|db|dumbbell|bent[\s-]*over)\s*rows?\b"),
+    ("lock_off", "Lock-off", "pull", "bw", r"\block[\s-]*offs?\b"),
+    ("engage", "Scap engagement", "pull", "bw", r"\bengagement\b|\bactivations?\b"),
+    ("bench", "Bench / chest press", "push", "ext", r"\b(bench|chest|incline)\s*press\b"),
+    ("shoulder", "Shoulder accessory", "push", "ext", r"\bshrugs?\b|\b(shoulder|prone)\s*rotations?\b|\bfly(es)?\b|\biyt\b"),
+    ("leg_raise", "Hanging leg raise", "core", "bw", r"\bleg\s*raises?\b|\blever\s*raises?\b|\bwindow\s*wipers?\b"),
+    ("crunch", "Crunch / V-sit", "core", "bw", r"\bcrunch(es)?\b|\bv[\s-]?(sits?|ups?)\b|\bboat\b|\b(kb|kettlebell)\s*twists?\b"),
+    ("plank", "Plank", "core", "bw", r"\bplanks?\b"),
     ("back_ext", "Back extension", "core", "bw", r"\bback\s*ext(ension)?s?\b|\bsuperman\b|\breverse\s*hyper"),
     ("pistol", "Pistol squat", "legs", "bw", r"\bpistols?\b"),
     ("srdl", "Single-leg RDL", "legs", "ext", r"\b(single|one|1)[\s-]*leg(ged)?\s*(rdl|romanian|deadlift)|\bsl\s*rdl\b"),
     ("ham_curl", "Hamstring curl", "legs", "bw", r"\b(ham(string)?|leg|slider|ring|trx|nordic)\s*curls?\b"),
+    ("deadlift", "Deadlift / rack pull", "legs", "ext", r"\bdead\s*lifts?\b|\brack\s*pulls?\b"),
+    ("squat", "Barbell squat", "legs", "ext", r"\b(back|front|overhead)\s*squats?\b"),
+    ("jump", "Jumps", "legs", "bw", r"\bjumps?\b|\bcmj\b"),
+    ("forearm", "Forearm", "other", "ext", r"\broller\b|\b(flexor|extensor|wrist)\s*curls?\b"),
     ("cossack", "Cossack squat", "legs", "ext", r"\bcossacks?\b"),
     ("swing", "KB swing", "legs", "ext", r"\bswings?\b"),
     ("getup", "Get-up", "core", "ext", r"\b(turkish\s*)?get[\s-]?ups?\b|\btgu\b"),
@@ -71,7 +82,7 @@ RE_DIST = re.compile(NUM + r"\s*(cm|in|inch|inches)\b", re.I)
 RE_SIDE = re.compile(r"/\s*(side|leg|arm)|\b(per|each)\s*(side|leg|arm)\b|\bea\b|\beach\b", re.I)
 RE_PASS = re.compile(r"\b(pass(ed)?|yes|y|full|flat|clean|done|achieved)\b|✓|✔", re.I)
 RE_FAIL = re.compile(r"\b(fail(ed)?|no|not\s*yet|almost)\b|✗|✘", re.I)
-HOLDS = {"hang", "lsit", "side_plank", "back_ext", "hollow", "copenhagen"}
+HOLDS = {"hang", "lsit", "side_plank", "back_ext", "hollow", "copenhagen", "plank", "lock_off", "engage"}
 LEVELS = [("palms", 3), ("knuckles", 2), ("fingertips", 1), ("fingers", 1), ("toes", 1), ("shins", 0), ("ankles", 0)]
 
 
