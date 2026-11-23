@@ -167,3 +167,16 @@ html{scroll-padding-top:100px}
 /* Home Screen app: keep the nav clear of the notch / status bar */
 .nav{padding-top:max(10px,env(safe-area-inset-top));padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
 body{padding-bottom:env(safe-area-inset-bottom)}
+/* Home Screen app: page tabs move to a bottom bar (same pattern as anesthesiabootcamp.com) */
+.tabbar{display:none}
+@media (display-mode: standalone){
+  .nav .links{display:none}
+  .nav{row-gap:0}
+  .subnav{border-top:0;padding-top:0}
+  body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:20;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+  .tabbar a{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;text-decoration:none;font:500 11px/1.2 var(--sans);color:var(--muted)}
+  .tabbar a .ti{font-size:20px;line-height:1;filter:grayscale(1);opacity:.7}
+  .tabbar a[aria-current=page]{color:var(--c0);background:color-mix(in srgb,var(--c0) 14%,transparent)}
+  .tabbar a[aria-current=page] .ti{filter:none;opacity:1}
+}
