@@ -46,7 +46,7 @@ WC.phaseOn = function (isoDate) {
 WC.weekInfo = function (mondayIso) {
   const p = WC.phaseOn(mondayIso);
   const d = (x) => new Date(x + 'T12:00:00');
-  const weekNo = Math.floor((d(mondayIso) - d(p.from)) / (7 * 864e5)) + 1;
+  const weekNo = Math.floor(Math.round((d(mondayIso) - d(p.from)) / 864e5) / 7) + 1; // whole days, so daylight saving can't shift the count
   const weeks = Math.round((d(p.to) - d(p.from)) / (7 * 864e5) + 1 / 7);
   const next = WC.phases[WC.phases.indexOf(p) + 1];
   const isLast = weekNo >= weeks;

@@ -39,7 +39,7 @@
   };
   const BM = [
     { cat: 'Fingers & pull', label: 'Hangboard', goal: `10 s on a 20 mm edge at +${lb(0.3 * BW)}–${lb(0.4 * BW)} lb`, f: () => {
-      const list = of('hang', (e) => (e.secs || 0) >= 10 && (!e.edge_mm || e.edge_mm <= 20));
+      const list = of('hang', (e) => e.grip !== 'f3' && (e.secs || 0) >= 10 && (!e.edge_mm || e.edge_mm <= 20));
       const b = bestBy(list, (e) => e.added_kg || 0);
       if (!b) return of('hang').length ? { p: 0, best: 'only bigger edges / shorter hangs so far', date: of('hang')[0].date } : null;
       const tot = BW + (b.added_kg || 0);
@@ -103,7 +103,8 @@
 
   // ---------- tests (max hang, 2-rep-max pull-up, 60% repeaters, side split) ----------
   const TESTS = [
-    { key: 'hang_test', label: 'Max hang test', how: '7 s on 20 mm, most weight held', v: (e) => e.added_kg, show: (e) => `${signed(e.added_kg)} · ${Math.round((100 * (BW + e.added_kg)) / BW)}% of bodyweight${e.edge_mm && e.edge_mm !== 20 ? ' · ' + e.edge_mm + ' mm' : ''}`, d: (x) => `${x > 0 ? '+' : '−'}${Math.abs(lb(x))} lb`, train: (e) => `Train max hangs at about ${signed(0.85 * (BW + e.added_kg) - BW)} (85%).` },
+    { key: 'hang_test', f: (e) => e.grip !== 'f3', label: 'Max hang · half crimp', how: '7 s on 20 mm, most weight held', v: (e) => e.added_kg, show: (e) => `${signed(e.added_kg)} · ${Math.round((100 * (BW + e.added_kg)) / BW)}% of bodyweight${e.edge_mm && e.edge_mm !== 20 ? ' · ' + e.edge_mm + ' mm' : ''}`, d: (x) => `${x > 0 ? '+' : '−'}${Math.abs(lb(x))} lb`, train: (e) => `Train max hangs at about ${signed(0.85 * (BW + e.added_kg) - BW)} (85%).` },
+    { key: 'hang_test', f: (e) => e.grip === 'f3', label: 'Max hang · front-three open', how: '7 s on 20 mm, most weight held', v: (e) => e.added_kg, show: (e) => `${signed(e.added_kg)} · ${Math.round((100 * (BW + e.added_kg)) / BW)}% of bodyweight`, d: (x) => `${x > 0 ? '+' : '−'}${Math.abs(lb(x))} lb` },
     { key: 'pull_test', label: '2-rep-max pull-up', how: 'heaviest weight for 2 clean reps', v: (e) => e.added_kg, show: (e) => `${signed(e.added_kg)} × 2`, d: (x) => `${x > 0 ? '+' : '−'}${Math.abs(lb(x))} lb` },
     { key: 'repeater_test', label: '60% repeaters', how: '7 s on / 3 s off at 60% of max hang, reps to failure', v: (e) => e.reps, show: (e) => `${e.reps} reps`, d: (x) => `${x > 0 ? '+' : '−'}${Math.abs(x)} reps` },
     { key: 'side_split', label: 'Side split', how: 'foot-to-foot span, measured the same way each time', v: (e) => e.cm, show: (e) => `${e.cm} cm`, d: (x) => `${x > 0 ? '+' : '−'}${Math.abs(x)} cm` },
@@ -111,7 +112,7 @@
   const tl = $('#test-list');
   let lastTestDate = null;
   TESTS.forEach((t) => {
-    const list = of(t.key).filter((e) => t.v(e) != null).sort((a, b) => (a.date < b.date ? 1 : -1));
+    const list = of(t.key, t.f).filter((e) => t.v(e) != null).sort((a, b) => (a.date < b.date ? 1 : -1));
     const [cur, prev] = list;
     if (cur && (!lastTestDate || cur.date > lastTestDate)) lastTestDate = cur.date;
     const row = el('div', 'ld-row');

@@ -108,6 +108,9 @@ def parse_line(raw, bodyweight_kg=None):
         e["variant"] = "standing" if "standing" in low else "kneeling"
     if key == "ham_curl":
         e["variant"] = "single" if re.search(r"\b(single|one|1)[\s-]*leg|\bsingle\b|\bsl\b", low) else "double"
+    if key in ("hang", "hang_test"):  # grip: front-three open drag, otherwise half crimp
+        e["grip"] = "f3" if re.search(r"\bf3\b|\bfront[\s-]*(3|three)\b|\bdrag\b|\b(3|three)[\s-]*finger", low) else "half"
+        rest = re.sub(r"\bf3\b|\bfront[\s-]*(3|three)\b|\b(3|three)[\s-]*finger", " ", rest, flags=re.I)
     if key == "pullup" and re.search(r"\bchin", low):
         e["variant"] = "chin"
 
