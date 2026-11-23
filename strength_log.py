@@ -30,7 +30,7 @@ CATALOG = [
     ("hang", "Hangboard", "pull", "bw", r"\bhang(board|s|ing)?\b|max\s*hang|\bedge\b"),
     ("pullup", "Pull-up", "pull", "bw", r"\b(pull|chin)[\s-]?ups?\b"),
     ("ring_row", "Ring row", "pull", "bw", r"\b(ring|trx|inverted)\s*rows?\b"),
-    ("face_pull", "Face pull", "pull", "ext", r"\bface\s*pulls?\b"),
+    ("face_pull", "Face pull", "other", "ext", r"\bface\s*pulls?\b"),
     ("ring_dip", "Ring dip", "push", "bw", r"\bdips?\b"),
     ("ohp", "Overhead press", "push", "ext", r"\b(overhead|military|kb|kettlebell|strict|shoulder|arnold|push)\s*press\b|\bohp\b"),
     ("pushup", "Push-up", "push", "bw", r"\b(push|press)[\s-]?ups?\b"),

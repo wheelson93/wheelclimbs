@@ -75,8 +75,8 @@
   const pullMain = buildPhase ? 'Negatives – Max Strength 4 × 3 (weighted, 5 s down), then Power Pull Ups 4 × 3 (fast, moderate effort, 3 min rest)'
     : sBlk % 2 === 0 ? 'Vacuum Backed: Bent Over Row, Wide Pull Ups, Bent Over Fly, 4 × 6 each, 3 min rest'
     : 'Pull Ups – Strength 4 × 6 (add weight once 6 are easy), Low Row – Strength 4 × 6';
-  const pushTxt = oddWk ? 'Bullet Proof Shoulders: Arnold Press, Leaning Shoulder Shrug, Prone Shoulder Rotations 4 × 6 each, then a prone pec stretch 3 × 30 s. Finish with Sleeper Stretch 60 s × 2/side and Shoulder Dislocations 10 × 2'
-    : 'Compression Strength: Bench Press 4 × 6, Incline Chest Press 4 × 6, Lock Offs 4 × 10 s, 3 min rest. Finish with Sleeper Stretch 60 s × 2/side and Shoulder Dislocations 10 × 2';
+  const pushTxt = oddWk ? 'Bullet Proof Shoulders: Arnold Press, Leaning Shoulder Shrug, Prone Shoulder Rotations 4 × 6 each, then a prone pec stretch 3 × 30 s. then Sleeper Stretch 60 s × 2/side and Shoulder Dislocations 10 × 2'
+    : 'Compression Strength: Bench Press 4 × 6, Incline Chest Press 4 × 6, Lock Offs 4 × 10 s, 3 min rest. then Sleeper Stretch 60 s × 2/side and Shoulder Dislocations 10 × 2';
   const legsTxt = buildPhase ? 'Power Generation legs: Countermovement Jumps 4 × 3 (fast, full rest), then Goblet Squat – Strength 4 × 6'
     : sBlk % 3 === 2 ? 'Tension Builder: Rack Pull 4 × 6, Overhead Squat 4 × 6 (light, for position), Low Row 4 × 6, 3 min rest'
     : sBlk % 3 === 0 ? 'Powerlifting, legs only: Deadlift 4 × 6, Back Squat 4 × 6, 3 min rest'
@@ -92,7 +92,7 @@
   ((ST && ST.sessions) || []).forEach((x) => (x.entries || []).forEach((e) => { if (AREAS[e.cat] && (!lastDone[e.cat] || x.date > lastDone[e.cat])) lastDone[e.cat] = x.date; }));
   const focus = Object.keys(AREAS).sort((a, b) => (lastDone[a] || '0').localeCompare(lastDone[b] || '0')).slice(0, 2);
   const KB = { kind: 'strength', title: `Strength · ${focus.map((k) => AREAS[k][0]).join(' + ')}${deload ? ' · deload' : ''}`,
-    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : 'About 55 min. General Warm Up first (leg swings, split squats, horse stance, scap press ups, band face pulls). '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Finish with ${forearmTxt} for the forearms. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
+    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : 'About 55 min. General Warm Up first (leg swings, split squats, horse stance, scap press ups, band face pulls). '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Finish with ${forearmTxt} for the forearms. Aim for about an hour. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
   // Climbing sessions per phase, named after the Lattice session library. Arrays are [c1, out] or [c1, c2, out].
   // Fingerboard work goes first in a session (before climbing); weights live on the separate strength day.
   const C = (title, detail) => ({ kind: 'climb', title, detail });
@@ -130,14 +130,14 @@
   };
   const spBase1 = SP[blk === 1 ? 'intervals' : blk === 2 ? 'pyramid' : 'board'];
   const spBuild2 = SP[WK.weekNo % 2 ? 'boardMax' : 'boulderMax'];
-  const HB = (sp) => C('Hangboard + ' + sp[0], `${FB} Then ${sp[1]} Plan on 75–90 min including the hangboard.`);
+  const HB = (sp) => C('Hangboard + ' + sp[0], `${FB} Then ${sp[1]} Aim for 90 min including warm-up; if you're running long, drop the last set rather than the warm-up. Hard stop at 120.`);
   let climb = {
     fall: [C('Gym routes', easeIn ? '6–8 routes 5.9–5.10c, lead if you can. Focus on clipping rhythm and taking a few practice falls.' : '8–10 routes, 5.10a–5.11a. Lead, onsight style; take a couple of practice falls.'),
            C('Outdoor climbing', 'Free Willie: 2–3 burns max, rested. Fill the day with 5.10b–d onsights (to-do list on the Climbing tab). Gym route volume if the weather is bad.')],
     prep1: [C('Hangboard + boulder mileage', `${FB} Then ${SP.mileage[1].replace('up to 60 min (20 problems)', '40–60 min')} Nothing near max in prep.`),
             C('Route mileage', `${AB.arcL} to start, then 5.9–5.10c leads outside or in the gym with a few practice falls. Stop with energy to spare.`)],
     base1: [HB(spBase1),
-            C(blk === 1 ? 'Long boulders' : 'Extended boulders', `${AB.arcS} to warm up. Then ${blk === 1 ? PE.long : PE.ext} Pump yes, failing every lap no. Finish with ${AB.oneTwo}.`),
+            C(blk === 1 ? 'Long boulders' : 'Extended boulders', `${AB.arcS} to warm up. Then ${blk === 1 ? PE.long : PE.ext} Pump yes, failing every lap no. If you are still under 90 min, finish with ${AB.oneTwo}.`),
             C('Sunny-day redpoint', `Clear Creek or the Golden Cliffs: a 5.11a/b redpoint. If it's cold or snowy, gym instead: ${PE.pyramid}`)],
     base2: [HB(SP.flash),
             C('Outdoor 5.11 redpoints', `Clear Creek 5.11a–c. Two routes worked, one sent is a good day. Bad weather, gym instead: ${WK.weekNo % 2 ? PE.broken : PE.doubles}`)],
@@ -166,13 +166,16 @@
   // Deload week: roughly half volume, nothing to failure.
   climb.forEach((c) => (c.hard = c.title === 'Exum Ridge' || !/ARC|Open climbing|Fun climbing|Easy gym/.test(c.title)));
   // Warm-ups (training app Open workouts): hangboard days get FS Warm Up – Hang; other hard gym days get calisthenics + a climbing ramp.
-  const CAL = (sw) => (Math.ceil(WK.weekNo / 2) % 2 ? '10-Minute Calisthenics' : 'Warm Up – Bodyweight (leg swings, frog, split squats, scap press ups, shoulder dislocations)') + ', then ' + (sw ? '' : 'Warm Up – Climbing Ramp (20 min, easy to moderate). ');
+  const CAL = (ramp) => (Math.ceil(WK.weekNo / 2) % 2 ? '10-Minute Calisthenics' : 'Warm Up – Bodyweight (leg swings, frog, split squats, scap press ups, shoulder dislocations)') + (ramp ? ', then Warm Up – Climbing Ramp (15–20 min, easy to moderate). ' : '. ');
   const FSW = 'FS Warm Up – Hang first (leg swings, split squats, horse stance, scap press ups, band face pulls, then 4 easy 10 s half-crimp hangs). ';
-  const COOL = ' Optional cool-down: Warm Up and Cool Down (14 min lower-body stretches).';
+  const COOL = ' If time allows (under 120 min total): Warm Up and Cool Down, 14 min of lower-body stretches.';
   climb = climb.map((c) => {
     if (!c.hard || /Exum Ridge|Test session|Outdoor|redpoint|multipitch|mountain|Project day|Project burns/i.test(c.title)) return c;
-    const hb = /^Hangboard first/.test(c.detail) || /Then .*Hangboard first|\bHangboard first/.test(c.detail.slice(0, 40));
-    return { ...c, detail: (hb ? FSW : CAL(false)) + c.detail + COOL };
+    const hb = /^Hangboard first/.test(c.detail);
+    // Easy hangs are already in FS Warm Up, so recruitment hangs start at moderate; sessions that open with ARC skip the ramp.
+    const d = hb ? c.detail.replace('building from very easy to challenging', 'building from moderate to challenging') : c.detail;
+    const hasArc = /^ARC /.test(d);
+    return { ...c, detail: (hb ? FSW : CAL(!hasArc)) + d + COOL };
   });
   if (deload) climb = climb.map((c) => c.title === 'Test session' ? c : ({ ...c, title: c.title + ' · deload', detail: `Deload week: if you're feeling run down, swap this for ${AB.fiveThree}. Otherwise about half the usual sets and nothing to failure; stop feeling fresh. ` + c.detail }));
   // ---------- schedule around work (availability.json from the calendar) ----------
