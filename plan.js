@@ -53,17 +53,23 @@
   const REST = (t, det) => ({ kind: 'rest', title: t || 'Rest', detail: det || 'Off, or an easy walk. Good day for mobility (hips, shoulders) and, if fingers feel good, the Abrahangs protocol: 10 min of 10 s hangs across grips at very easy effort, feet on the ground.' });
   // Strength: pick the two areas trained least recently (from strength.json), so the benchmarks move evenly.
   const fingersOnWall = ['prep1', 'base1', 'base2', 'base3', 'build2'].includes(phase.key);
+  // Strength-day areas, built from the training app's Conditioning workouts (names match the app).
+  // Base phases run 6 × 4 strength sets; build phases switch pulling to 3 × 4 max-strength negatives.
+  const buildPhase = ['build1', 'build2'].includes(phase.key);
   const AREAS = {
-    pull: [fingersOnWall ? 'pull' : 'fingers + pull', fingersOnWall ? 'weighted pull-ups 4×3–5 (or 3×max strict), ring rows 3×10' : 'hangboard 6×10 s on 20 mm, weighted pull-ups 4×3–5'],
-    push: ['push', 'ring dips 3×max, KB overhead press 3×5/arm, push-ups 2×max'],
-    core: ['core', 'L-sit 4×max hold, ab wheel 3×8–10, side plank 2×45 s/side, back extension 2×60 s'],
-    legs: ['legs', 'cossack squat 3×8/side, single-leg RDL 3×8/side, ham curl 3×12–15, pistol 3×3–5/leg'],
+    pull: [fingersOnWall ? 'pull' : 'fingers + pull', (fingersOnWall ? '' : 'hangboard 6×10 s on 20 mm, ')
+      + 'Two Arm Engagement 4 × 10 s to warm up, then '
+      + (buildPhase ? 'Negatives – Max Strength 4 × 3 (weighted, 5 s down)' : 'Pull Ups – Strength 4 × 6 (add weight once 6 are easy)')
+      + ', Low Row – Strength 4 × 6'],
+    push: ['push', 'Press Ups – Strength 4 × 6, Bar Dips – Strength 4 × 6, Face Pulls – Strength 4 × 6 for the shoulders'],
+    core: ['core', 'Ab Wheel Roll Out 4 × 10 (kneeling, standing when easy), Hollow Body Hold 4 × 30 s, Copenhagen Plank 4 × 30 s/side'],
+    legs: ['legs', 'Goblet Squat – Strength 4 × 6, Kettlebell Swings – Strength 4 × 6, TRX Hamstring Curl 4 × 6'],
   };
   const lastDone = {};
   ((ST && ST.sessions) || []).forEach((x) => (x.entries || []).forEach((e) => { if (AREAS[e.cat] && (!lastDone[e.cat] || x.date > lastDone[e.cat])) lastDone[e.cat] = x.date; }));
   const focus = Object.keys(AREAS).sort((a, b) => (lastDone[a] || '0').localeCompare(lastDone[b] || '0')).slice(0, 2);
   const KB = { kind: 'strength', title: `Strength · ${focus.map((k) => AREAS[k][0]).join(' + ')}${deload ? ' · deload' : ''}`,
-    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : '~40 min. '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
+    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : '~40 min. '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Finish with Heavy Roller Extensor 3 × 10 for the forearms. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
   // Climbing sessions per phase, named after the Lattice session library. Arrays are [c1, out] or [c1, c2, out].
   // Fingerboard work goes first in a session (before climbing); weights live on the separate strength day.
   const C = (title, detail) => ({ kind: 'climb', title, detail });

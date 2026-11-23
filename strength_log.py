@@ -38,6 +38,10 @@ CATALOG = [
     ("abwheel", "Ab wheel", "core", "bw", r"\bab\s*wheel|\brollouts?\b"),
     ("t2b", "Toes-to-bar", "core", "bw", r"\btoes[\s-]*to[\s-]*bar\b|\bt2b\b|\bttb\b"),
     ("side_plank", "Side plank", "core", "bw", r"\bside\s*planks?\b"),
+    ("hollow", "Hollow body hold", "core", "bw", r"\bhollow\b"),
+    ("copenhagen", "Copenhagen plank", "core", "bw", r"\bcopenhagen\b"),
+    ("negative", "Pull-up negative", "pull", "bw", r"\bnegatives?\b"),
+    ("low_row", "Low row", "pull", "ext", r"\b(low|db|dumbbell|bent[\s-]*over)\s*rows?\b"),
     ("back_ext", "Back extension", "core", "bw", r"\bback\s*ext(ension)?s?\b|\bsuperman\b|\breverse\s*hyper"),
     ("pistol", "Pistol squat", "legs", "bw", r"\bpistols?\b"),
     ("srdl", "Single-leg RDL", "legs", "ext", r"\b(single|one|1)[\s-]*leg(ged)?\s*(rdl|romanian|deadlift)|\bsl\s*rdl\b"),
@@ -67,7 +71,7 @@ RE_DIST = re.compile(NUM + r"\s*(cm|in|inch|inches)\b", re.I)
 RE_SIDE = re.compile(r"/\s*(side|leg|arm)|\b(per|each)\s*(side|leg|arm)\b|\bea\b|\beach\b", re.I)
 RE_PASS = re.compile(r"\b(pass(ed)?|yes|y|full|flat|clean|done|achieved)\b|✓|✔", re.I)
 RE_FAIL = re.compile(r"\b(fail(ed)?|no|not\s*yet|almost)\b|✗|✘", re.I)
-HOLDS = {"hang", "lsit", "side_plank", "back_ext"}
+HOLDS = {"hang", "lsit", "side_plank", "back_ext", "hollow", "copenhagen"}
 LEVELS = [("palms", 3), ("knuckles", 2), ("fingertips", 1), ("fingers", 1), ("toes", 1), ("shins", 0), ("ankles", 0)]
 
 
