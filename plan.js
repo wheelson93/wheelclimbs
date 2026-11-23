@@ -80,6 +80,16 @@
     boulderMax: ['boulder max efforts', 'Boulder Max Efforts: 60 min on limit gym boulders that look like the project (holds, angle), full rest between goes.'],
   };
   const blk = Math.ceil(WK.weekNo / 4);
+  // Power endurance workouts (names match the training app).
+  const PE = {
+    long: 'Long Boulders: one well-rehearsed ~14-move problem, 4 laps × 3 sets, hard, 5 min between sets.',
+    ext: 'Extended Boulders: one ~16-move problem, 4 laps × 3 sets, hard, 5 min between sets. You should be fighting by the last lap.',
+    pyramid: 'Route Pyramid: 8 routes from easy up to your hardest and back down, 10 min rest. Short on time? Stop at the top.',
+    broken: 'Broken 30s: a 30-move route or circuit near your limit, split into three 10-move sections with 20 s rest between them; 4 laps, 6 min between laps.',
+    doubles: 'Route Doubles: a hard route, lower off (or a short rest on the wall), then straight back up. 5 doubles, 10 min between.',
+    fourx4: '4x4s: 4 boulders back to back with little or no rest, 4 sets, 5 min between sets.',
+    ancap: 'AnCap Project: a boulder that copies the project\'s crux section, 6 sets at very hard effort, 5 min rest. Climb each set like a redpoint.',
+  };
   const spBase1 = SP[blk === 1 ? 'intervals' : blk === 2 ? 'pyramid' : 'board'];
   const spBuild2 = SP[WK.weekNo % 2 ? 'boardMax' : 'boulderMax'];
   const HB = (sp) => C('Hangboard + ' + sp[0], `${FB} Then ${sp[1]} Plan on 75–90 min including the hangboard.`);
@@ -89,11 +99,11 @@
     prep1: [C('Hangboard + boulder mileage', `${FB} Then ${SP.mileage[1].replace('up to 60 min (20 problems)', '40–60 min')} Nothing near max in prep.`),
             C('Route mileage', 'Outdoor or gym routes: lots of 5.9–5.10c leads and a few practice falls. Stop with energy to spare.')],
     base1: [HB(spBase1),
-            C('Extended boulders + ARC', 'ARC 10 min very easy. Then extended boulders: a 15–20-move sequence, 4 laps × 3 sets, 3 min between laps, 5 min between sets. ARC 10 min to finish. Pump yes, failing every lap no.'),
-            C('Sunny-day redpoint', 'Clear Creek or the Golden Cliffs: a 5.11a/b redpoint. If it\'s cold or snowy, a route pyramid in the gym instead.')],
+            C(blk === 1 ? 'Long boulders' : 'Extended boulders', `10 min very easy climbing to warm up. Then ${blk === 1 ? PE.long : PE.ext} Pump yes, failing every lap no.`),
+            C('Sunny-day redpoint', `Clear Creek or the Golden Cliffs: a 5.11a/b redpoint. If it's cold or snowy, gym instead: ${PE.pyramid}`)],
     base2: [HB(SP.flash),
-            C('Outdoor 5.11 redpoints', 'Clear Creek 5.11a–c. Two routes worked, one sent is a good day. In the gym: 10 on / 10 off (3 × 10 min continuous easy climbing).')],
-    build1: [C('Gym routes · hold 5.11', FB + ' Then route doubles: 5 hard routes climbed twice with little rest, 10 min between sets. Keeps sport fitness while the mountain days take over.'),
+            C('Outdoor 5.11 redpoints', `Clear Creek 5.11a–c. Two routes worked, one sent is a good day. Bad weather, gym instead: ${WK.weekNo % 2 ? PE.broken : PE.doubles}`)],
+    build1: [C('Gym routes · hold 5.11', `${FB} Then ${PE.doubles} Keeps sport fitness while the mountain days take over.`),
              C('Trad multipitch', 'Eldo, Lumpy Ridge or Boulder Canyon 5.6–5.8 multipitch. Move fast: quick transitions, simul-climb easy ground, approach shoes on easy pitches. Treat it as Exum practice.')],
     taper1: [C('Easy gym session', 'Short and easy, 5.9–5.10, a few moves of quality. Nothing that leaves you sore.'),
              C('Short mountain day', 'An easy alpine half-day or a few easy multipitch pitches. Sleep a lot this week.')],
@@ -101,10 +111,10 @@
     rec1: [C('Open climbing', 'Whatever sounds fun, short session, stop fresh.'),
            C('Fun climbing day', 'Easy outdoor routes with friends. No projects, no training.')],
     base3: [HB(SP.intervals),
-            C('Extended boulders', 'A 15–20-move sequence, 4 laps × 3 sets, 3 min between laps, 5 min between sets. Increase difficulty once you can finish every lap.'),
+            C('Extended boulders', `${PE.ext} Pick a harder problem once every lap goes.`),
             C('5.11 redpoints + project scouting', 'Clear Creek 5.11s, and a look at two or three 5.12a candidates: hang the draws, work the crux, note the holds and angle.')],
     build2: [HB(spBuild2),
-             C('4×4s', '4 boulders × 4 laps back-to-back, 4 sets, 5 min rest. Should only just get through the last set.'),
+             (WK.weekNo <= 2 ? C('4x4s', `${PE.fourx4} You should only just get through the last set.`) : C('AnCap project', PE.ancap)),
              C('Project day', 'Work the project: rehearse sections, then 1–2 redpoint burns. Stop while still pulling well.')],
     taper2: [C('Short power session', `${FB} Then a few hard boulders, full rest, under an hour. Leave feeling strong.`),
              C('Project burns (light)', 'Warm up, one or two burns on the project, done.')],
@@ -114,7 +124,7 @@
   };
   climb = climb[phase.key] || climb.fall;
   // Test week: the first hard session becomes the full test session (fresh day, no other hard climbing that day).
-  if (testWeek) climb[0] = C('Test session', 'Fresh day, long warm-up with recruitment hangs. 1) Half crimp max hang (app: Half 4 – Hang – Max Test): 7 s on 20 mm, adding weight each go, up to 8 goes with 3 min rest; note the most you held. 2) Front-three open, same protocol, 4–6 goes. 3) 2-rep-max pull-up: up to 8 sets of 2, 3 min rest. 4) 60% repeaters: 7 s on / 3 s off at 60% of your half-crimp max until you can\'t hold; count reps. 5) Side split, once warm. Log each on its own line in Strava: "max hang test half 20mm +45lb", "max hang test f3 20mm +25lb", "2RM pull-up +50lb", "repeater test 24 reps", "side split 150cm".');
+  if (testWeek) climb[0] = C('Test session', 'Fresh day, long warm-up with recruitment hangs. 1) Half crimp max hang (app: Half 4 – Hang – Max Test): 7 s on 20 mm, adding weight each go, up to 8 goes with 3 min rest; note the most you held. 2) Front-three open, same protocol, 4–6 goes. 3) 2-rep-max pull-up: up to 8 sets of 2, 3 min rest. 4) 60% repeaters: 60% of your two-arm half-crimp max (bodyweight plus added load), 7 s on / 3 s off until you can\'t hold; count reps (each rep is 10 s, so reps = total time ÷ 10). 5) Side split, once warm. Log each on its own line in Strava: "max hang test half 20mm +45lb", "max hang test f3 20mm +25lb", "2RM pull-up +50lb", "repeater test 24 reps", "side split 150cm".');
   // Deload week: roughly half volume, nothing to failure.
   climb.forEach((c) => (c.hard = c.title === 'Exum Ridge' || !/ARC|Open climbing|Fun climbing|Easy gym/.test(c.title)));
   if (deload) climb = climb.map((c) => c.title === 'Test session' ? c : ({ ...c, title: c.title + ' · deload', detail: 'Deload week: about half the usual sets and nothing to failure; stop feeling fresh. ' + c.detail }));
