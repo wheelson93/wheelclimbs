@@ -24,7 +24,7 @@
   <div class="links">
     <a href="plan.html">This week</a><a href="goals.html">Goals</a><a href="./">Climbing</a><a href="aerobic.html">Aerobic</a><a href="strength.html" class="on">Strength</a>
   </div>
-  <div class="subnav"><a href="#benchmarks">Benchmarks</a><a href="#mobility">Mobility</a><a href="#sessions">Sessions</a><a href="#volume">Volume</a><a href="#history">History</a><a href="#howto">How to log</a></div>
+  <div class="subnav"><a href="#benchmarks">Benchmarks</a><a href="#tests">Tests</a><a href="#mobility">Mobility</a><a href="#sessions">Sessions</a><a href="#volume">Volume</a><a href="#history">History</a><a href="#howto">How to log</a></div>
 </nav>
 
 <main class="wrap" id="top">
@@ -41,6 +41,13 @@
       <div><h2>Benchmarks</h2><p class="note">Best logged effort against each target. Pulling and fingers drive the climbing; push, core and legs keep you balanced and durable.</p></div>
     </div>
     <div class="bm-grid" id="bm"></div>
+  </section>
+
+  <section class="card" id="tests">
+    <h2>Tests</h2>
+    <p class="note">The four standard tests, run in test weeks every 8–12 weeks on a rested day. The max hang result sets your hangboard loads (train at about 85% of it).</p>
+    <div id="test-list"></div>
+    <div class="retest" id="testdue"></div>
   </section>
 
   <div class="grid">
@@ -95,6 +102,7 @@ high step pass</pre>
         <li><b>Sides:</b> add <code>/side</code>, <code>/leg</code> or <code>/arm</code>.</li>
         <li><b>Hangboard:</b> add the edge, like <code>20mm</code>. Hangs default to seconds.</li>
         <li><b>Variants:</b> <code>ab wheel standing</code>, <code>ham curl single</code>.</li>
+        <li><b>Test week:</b> <code>max hang test 20mm +45lb</code>, <code>2RM pull-up +50lb</code>, <code>repeater test 24 reps</code>, <code>side split 150cm</code>.</li>
         <li><b>Mobility:</b> a distance (<code>pancake 25cm</code>), <code>pass</code> / <code>not yet</code>, or a level (<code>toe touch palms</code>).</li>
         <li>Anything else, like "bicep curl 12kg 3x10", is still logged and charted.</li>
       </ul>
@@ -106,6 +114,7 @@ high step pass</pre>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="phases.js"></script>
 <script src="strength.js"></script>
 <nav class="tabbar" aria-label="Pages"><a href="plan.html"><span class="ti" aria-hidden="true">🗓️</span><span>This week</span></a><a href="goals.html"><span class="ti" aria-hidden="true">🏔️</span><span>Goals</span></a><a href="./"><span class="ti" aria-hidden="true">🧗</span><span>Climbing</span></a><a href="aerobic.html"><span class="ti" aria-hidden="true">🫀</span><span>Aerobic</span></a><a href="strength.html" aria-current="page"><span class="ti" aria-hidden="true">💪</span><span>Strength</span></a></nav>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");</script>

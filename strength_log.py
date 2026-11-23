@@ -22,6 +22,11 @@ KG_PER_LB = 0.45359237
 #       "ext" = external load (kettlebell etc.)
 #       "test"= mobility check
 CATALOG = [
+    # Lattice-style tests (logged in a test week). Must come before the general exercises they resemble.
+    ("hang_test", "Max hang test", "test", "bw", r"max\s*hang\s*test|\bhang\s*test\b|\bmht\b"),
+    ("pull_test", "2RM pull-up test", "test", "bw", r"\b2\s*rm\b|pull[\s-]?ups?\s*test"),
+    ("repeater_test", "Repeater test", "test", "bw", r"\brepeaters?\s*test\b|\brepeaters?\b"),
+    ("side_split", "Side split", "mobility", "test", r"\bside\s*split"),
     ("hang", "Hangboard", "pull", "bw", r"\bhang(board|s|ing)?\b|max\s*hang|\bedge\b"),
     ("pullup", "Pull-up", "pull", "bw", r"\b(pull|chin)[\s-]?ups?\b"),
     ("ring_row", "Ring row", "pull", "bw", r"\b(ring|trx|inverted)\s*rows?\b"),
@@ -185,6 +190,22 @@ def parse_line(raw, bodyweight_kg=None):
         elif RE_FAIL.search(rest):
             e["pass"] = False
 
+    if cat == "test":  # tests carry their own defaults
+        if key == "hang_test":
+            e.setdefault("secs", 7.0)
+        if key == "pull_test":
+            e.setdefault("reps", 2)
+        if key == "repeater_test":
+            mrp = re.search(r"(\d{1,3})\s*(reps?)?\b", RE_LOAD.sub(" ", RE_PCT.sub(" ", line)))
+            if "reps" not in e and mrp:
+                e["reps"] = int(mrp.group(1))
+            e.pop("secs", None)
+            e.pop("added_kg", None)  # "60%" refers to the max-hang load, not bodyweight
+        if key in ("hang_test", "pull_test") and "added_kg" not in e:
+            return None
+        if key == "repeater_test" and "reps" not in e:
+            return None
+        return e
     if cat != "mobility" and not any(k in e for k in ("reps", "secs")):
         return None  # e.g. a stray sentence that mentions "hang"
     if cat == "mobility" and not any(k in e for k in ("cm", "level", "pass", "secs", "reps")):

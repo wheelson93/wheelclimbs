@@ -26,6 +26,9 @@
   const dt = (x) => new Date(x + 'T12:00:00');
   const phase = WC.phaseOn(iso(today));
   const nextPhase = PHASES[PHASES.indexOf(phase) + 1] || phase;
+  const WK = WC.weekInfo(iso(monday)); // week of phase, deload, test week
+  const deload = WK.deload, testWeek = WK.test && WK.phase === phase;
+  const volFactor = deload ? 0.6 : phase.type === 'taper' ? 0.6 : phase.type === 'recover' ? 0.7 : 1;
 
   // ---------- recent load ----------
   const within = (dateStr, from, to) => dateStr >= iso(from) && dateStr < iso(to);
@@ -34,12 +37,12 @@
   const climbDates = new Set([...sessions.filter((s) => s.sport === 'RockClimbing').map((s) => s.date), ...ticks.map((t) => t.Date)]);
   const climbs4 = [...climbDates].filter((d) => within(d, fourAgo, monday)).length / 4;
   const round15 = (m) => Math.round(m / 15) * 15;
-  const aerTarget = Math.min(phase.aerCap || 360, Math.max(90, round15(aerMin4 * 1.2)));
+  const aerTarget = round15(Math.min(phase.aerCap || 360, Math.max(90, round15(aerMin4 * 1.2))) * volFactor);
   const midMin = Math.max(40, round15(aerTarget * (1 - (phase.longShare || 0.6))));
   const longMin = Math.max(60, aerTarget - midMin);
   const vertTarget = Math.round((longMin / 60) * 600 / 100) * 100;
   const lastTest = (D.drift_tests || []).slice().sort((a, b) => (a.date < b.date ? 1 : -1))[0];
-  const testDue = !lastTest || lastTest.protocol !== 'test' || (today - new Date(lastTest.date + 'T12:00:00')) / DAY >= 42;
+  const testDue = !['taper', 'peak'].includes(phase.type) && (!lastTest || lastTest.protocol !== 'test' || (today - new Date(lastTest.date + 'T12:00:00')) / DAY >= 42);
   const climbTarget = phase.climbs || 2;
   const easeIn = climbs4 < 1;
 
@@ -49,9 +52,9 @@
   const LONG = { kind: 'aerobic', title: 'Long day', detail: `${Math.floor(longMin / 60)}h${longMin % 60 ? ' ' + (longMin % 60) + 'm' : ''} hike with ~${vertTarget.toLocaleString()} ft of vert, mostly under ${z2hi} bpm. North Table, Galbraith or Mt Falcon all work close to home.`, min: longMin };
   const REST = (t, det) => ({ kind: 'rest', title: t || 'Rest', detail: det || 'Off, or an easy walk. Good day for mobility: hips, shoulders, fingers.' });
   // Strength: pick the two areas trained least recently (from strength.json), so the benchmarks move evenly.
-  const fingersOnWall = ['winter', 'rebuild'].includes(phase.key);
+  const fingersOnWall = ['prep1', 'base1', 'base2', 'base3', 'build2'].includes(phase.key);
   const AREAS = {
-    pull: ['fingers + pull', fingersOnWall ? 'weighted pull-ups 4×3–5 (or 3×max strict), ring rows 3×10' : 'hangboard 6×10 s on 20 mm, weighted pull-ups 4×3–5'],
+    pull: [fingersOnWall ? 'pull' : 'fingers + pull', fingersOnWall ? 'weighted pull-ups 4×3–5 (or 3×max strict), ring rows 3×10' : 'hangboard 6×10 s on 20 mm, weighted pull-ups 4×3–5'],
     push: ['push', 'ring dips 3×max, KB overhead press 3×5/arm, push-ups 2×max'],
     core: ['core', 'L-sit 4×max hold, ab wheel 3×8–10, side plank 2×45 s/side, back extension 2×60 s'],
     legs: ['legs', 'cossack squat 3×8/side, single-leg RDL 3×8/side, ham curl 3×12–15, pistol 3×3–5/leg'],
@@ -59,31 +62,56 @@
   const lastDone = {};
   ((ST && ST.sessions) || []).forEach((x) => (x.entries || []).forEach((e) => { if (AREAS[e.cat] && (!lastDone[e.cat] || x.date > lastDone[e.cat])) lastDone[e.cat] = x.date; }));
   const focus = Object.keys(AREAS).sort((a, b) => (lastDone[a] || '0').localeCompare(lastDone[b] || '0')).slice(0, 2);
-  const KB = { kind: 'strength', title: `Strength · ${focus.map((k) => AREAS[k][0]).join(' + ')}`,
-    detail: `~40 min. ${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
+  const KB = { kind: 'strength', title: `Strength · ${focus.map((k) => AREAS[k][0]).join(' + ')}${deload ? ' · deload' : ''}`,
+    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : '~40 min. '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
+  // Climbing sessions per phase, named after the Lattice session library. Arrays are [c1, out] or [c1, c2, out].
+  // Fingerboard work goes first in a session (before climbing); weights live on the separate strength day.
+  const C = (title, detail) => ({ kind: 'climb', title, detail });
+  const MH7 = 'Max hangs first: 4 × 7 s on 20 mm at 85% of your max-hang test load (about 8/10 effort), 3 min rest.';
+  const MH10 = 'Max hangs first: 4 × 10 s on 20 mm at a hard 8/10, 3 min rest.';
   let climb = {
-    fall: [{ kind: 'climb', title: 'Gym routes', detail: easeIn ? '6–8 routes 5.9–5.10c, lead if you can. Focus on clipping rhythm and taking a few practice falls.' : '8–10 routes, 5.10a–5.11a. Lead, onsight style; take a couple of practice falls.' },
-           { kind: 'climb', title: 'Outdoor climbing', detail: 'Free Willie: 2–3 burns max, rested. Fill the day with 5.10b–d onsights (to-do list on the Climbing tab). Gym route volume if the weather is bad.' }],
-    winter: [{ kind: 'climb', title: 'Limit bouldering + hangboard', detail: 'Warm up well, then 4–6 problems near your max with full 3–4 min rests. Finish with hangboard: 6 × 10 s on a 20 mm edge, 3 min rest.' },
-             { kind: 'climb', title: 'Limit bouldering', detail: 'Same as Tuesday but stop when the quality drops. Skip it if fingers are sore.' },
-             { kind: 'climb', title: 'Sunny-day redpoint', detail: 'Clear Creek or Golden Cliffs: a 5.11a/b redpoint. Gym routes (5.10+ to 5.11) if it is cold or snowy.' }],
-    spring: [{ kind: 'climb', title: 'Gym routes · power endurance', detail: '4×4s on 5.10 routes, or 3 laps on a hard 5.11 with 5 min rest.' },
-             { kind: 'climb', title: 'Outdoor 5.11 redpoints', detail: 'Clear Creek 5.11a–c. Two routes worked, one sent is a good day.' }],
-    alpine: [{ kind: 'climb', title: 'Gym routes · hold 5.11', detail: '8–10 routes 5.10c–5.11b, plus a few 4×4s. Keeps the sport fitness while the mountain days take over.' },
-             { kind: 'climb', title: 'Trad multipitch', detail: 'Eldo, Lumpy Ridge or Boulder Canyon 5.6–5.8 multipitch. Move fast: quick transitions, simul-climb easy ground, approach shoes on easy pitches. Treat it as Exum practice.' }],
-    exum: [{ kind: 'climb', title: 'Easy gym session', detail: 'Short and easy, 5.9–5.10. Stay loose; nothing that leaves you sore.' },
-           { kind: 'climb', title: 'Mountain day', detail: 'Exum, or an easy alpine warm-up in the week before. In the last 7 days keep everything short and sleep a lot.' }],
-    project: [{ kind: 'climb', title: 'Gym bouldering', detail: 'Moves like the project: steep pulls, crimps. Short, high quality.' },
-              { kind: 'climb', title: 'Project day', detail: 'Warm up thoroughly, then 2–3 burns on the 5.12a. Rest and stop while still fresh.' }],
+    fall: [C('Gym routes', easeIn ? '6–8 routes 5.9–5.10c, lead if you can. Focus on clipping rhythm and taking a few practice falls.' : '8–10 routes, 5.10a–5.11a. Lead, onsight style; take a couple of practice falls.'),
+           C('Outdoor climbing', 'Free Willie: 2–3 burns max, rested. Fill the day with 5.10b–d onsights (to-do list on the Climbing tab). Gym route volume if the weather is bad.')],
+    prep1: [C('Density hangs + boulder mileage', 'Density hangs: 4 × 30 s at about 7/10 (use a foot on a chair or a pulley if needed), 3 min rest. Then boulder mileage: one moderate problem every 3 minutes for 40–60 min. Nothing near max.'),
+            C('Route mileage', 'Outdoor or gym routes: lots of 5.9–5.10c leads and a few practice falls. Stop with energy to spare.')],
+    base1: [C('Max hangs + strength intervals', `${MH7} Then strength intervals: 4 hard boulders, 3 good tries each with 3–4 min rest. Two climbing elements, done.`),
+            C('Extended boulders + ARC', 'ARC 10 min very easy. Then extended boulders: a 15–20-move sequence, 4 laps × 3 sets, 3 min between laps, 5 min between sets. ARC 10 min to finish. Pump yes, failing every lap no.'),
+            C('Sunny-day redpoint', 'Clear Creek or the Golden Cliffs: a 5.11a/b redpoint. If it\'s cold or snowy, a route pyramid in the gym instead.')],
+    base2: [C('Max hangs + flashing boulders', `${MH10} Then 7 boulders around your flash level, 4 min each: read, commit, move on.`),
+            C('Outdoor 5.11 redpoints', 'Clear Creek 5.11a–c. Two routes worked, one sent is a good day. In the gym: 10 on / 10 off (3 × 10 min continuous easy climbing).')],
+    build1: [C('Gym routes · hold 5.11', 'Route doubles: 5 hard routes climbed twice with little rest, 10 min between sets. Keeps sport fitness while the mountain days take over.'),
+             C('Trad multipitch', 'Eldo, Lumpy Ridge or Boulder Canyon 5.6–5.8 multipitch. Move fast: quick transitions, simul-climb easy ground, approach shoes on easy pitches. Treat it as Exum practice.')],
+    taper1: [C('Easy gym session', 'Short and easy, 5.9–5.10, a few moves of quality. Nothing that leaves you sore.'),
+             C('Short mountain day', 'An easy alpine half-day or a few easy multipitch pitches. Sleep a lot this week.')],
+    peak1: [C('Exum Ridge', 'The objective. Everything else this week is rest, travel, and easy walks.')],
+    rec1: [C('Open climbing', 'Whatever sounds fun, short session, stop fresh.'),
+           C('Fun climbing day', 'Easy outdoor routes with friends. No projects, no training.')],
+    base3: [C('Max hangs + strength intervals', `${MH7} Then strength intervals on board or gym boulders: 4 problems × 3 tries.`),
+            C('Extended boulders', 'A 15–20-move sequence, 4 laps × 3 sets, 3 min between laps, 5 min between sets. Increase difficulty once you can finish every lap.'),
+            C('5.11 redpoints + project scouting', 'Clear Creek 5.11s, and a look at two or three 5.12a candidates: hang the draws, work the crux, note the holds and angle.')],
+    build2: [C('Max efforts + strength intervals', 'Half session of limit boulders in the project\'s style (holds, angle), then reps on boulders you\'ve already done. Fingers: 3 × 7 s max hangs first if fresh.'),
+             C('4×4s', '4 boulders × 4 laps back-to-back, 4 sets, 5 min rest. Should only just get through the last set.'),
+             C('Project day', 'Work the project: rehearse sections, then 1–2 redpoint burns. Stop while still pulling well.')],
+    taper2: [C('Short power session', 'A few hard boulders, full rest, under an hour. Leave feeling strong.'),
+             C('Project burns (light)', 'Warm up, one or two burns on the project, done.')],
+    peak2: [C('Gym bouldering · short', 'Moves like the project, 45 min max. Quality only.'),
+            C('ARC + mobility', '20 min very easy climbing, no pump, then hips and shoulders. An easy day, not training.'),
+            C('Project day', 'Fresh skin, warm up thoroughly, 2–3 good burns on the 5.12a. Stop while still fresh.')],
   };
-  climb.rebuild = climb.winter;
-  climb.volume = climb.spring;
   climb = climb[phase.key] || climb.fall;
+  // Test week: the first hard session becomes the full test session (fresh day, no other hard climbing that day).
+  if (testWeek) climb[0] = C('Test session', 'Fresh day, long warm-up. 1) Max hang test: 7 s hangs on 20 mm, adding weight each go, up to 8 goes with 3 min rest; note the most you held. 2) 2-rep-max pull-up: up to 8 sets of 2, 3 min rest. 3) 60% repeaters: 7 s on / 3 s off at 60% of your max-hang load until you can\'t hold; count reps. 4) Side split, once warm. Log each on its own line in Strava: "max hang test 20mm +45lb", "2RM pull-up +50lb", "repeater test 24 reps", "side split 150cm".');
+  // Deload week: roughly half volume, nothing to failure.
+  climb.forEach((c) => (c.hard = c.title === 'Exum Ridge' || !/ARC|Open climbing|Fun climbing|Easy gym/.test(c.title)));
+  if (deload) climb = climb.map((c) => c.title === 'Test session' ? c : ({ ...c, title: c.title + ' · deload', detail: 'Deload week: about half the usual sets and nothing to failure; stop feeling fresh. ' + c.detail }));
   // ---------- schedule around work (availability.json from the calendar) ----------
   const LONG_ = LONG, TEST = testDue ? DRIFT : Z2(midMin);
-  const sessionsWanted = climb.length === 3
-    ? [['out', climb[2], true], ['test', TEST, false], ['long', LONG_, false], ['c1', climb[0], true], ['c2', climb[1], true], ['kb', KB, false]]
-    : [['out', climb[1], true], ['test', TEST, false], ['long', LONG_, false], ['c1', climb[0], true], ['kb', KB, false]];
+  let sessionsWanted = climb.length === 3
+    ? [['out', climb[2], climb[2].hard], ['test', TEST, false], ['long', LONG_, false], ['c1', climb[0], climb[0].hard], ['c2', climb[1], climb[1].hard], ['kb', KB, false]]
+    : climb.length === 2 ? [['out', climb[1], climb[1].hard], ['test', TEST, false], ['long', LONG_, false], ['c1', climb[0], climb[0].hard], ['kb', KB, false]]
+    : [['out', climb[0], true], ['test', TEST, false]];
+  if (['taper', 'peak'].includes(phase.type)) sessionsWanted = sessionsWanted.filter(([k]) => k !== 'kb' && (phase.type !== 'peak' || k !== 'long'));
+  if (phase.type === 'recover') sessionsWanted = sessionsWanted.filter(([k]) => k !== 'test');
   // how well each session fits each kind of day (0 = not allowed)
   const FIT = {
     out:  { open: 10, afternoon: 4 },
@@ -114,8 +142,14 @@
       else unplaced.push(sess.title);
     }
     plan = plan.map((p, i) => p || REST(avail[i] === 'evening' ? 'Rest (work day)' : 'Rest / easy'));
-  } else if (climb.length === 3) plan = [REST(), climb[0], TEST, KB, climb[1], climb[2], LONG];
-  else plan = [REST(), climb[0], TEST, KB, REST('Rest / easy'), climb[1], LONG];
+  } else {
+    // No calendar for this week: a default Tue/Wed/Thu/Fri/Sat/Sun layout of whatever this phase wants.
+    const SLOT = { c1: 1, test: 2, kb: 3, c2: 4, out: 5, long: 6 };
+    plan = days.map(() => null);
+    sessionsWanted.forEach(([k, sess]) => { plan[SLOT[k]] = sess; });
+    plan = plan.map((p) => p || REST('Rest / easy'));
+    plan[0] = plan[0].kind === 'rest' ? REST() : plan[0];
+  }
   const AVLAB = { open: 'Open day', afternoon: 'Afternoon free', evening: 'Evening only', morning: 'Morning only', recover: 'Recovery', none: 'No window' };
 
   // ---------- Apple Watch readiness (0–10, logged each morning by an iPhone Shortcut) ----------
@@ -155,13 +189,13 @@
   const doneLong = weekActs.some((w) => w.aerobic.some((a) => (a.moving_min || 0) >= longMin * 0.8));
 
   // ---------- header + tiles ----------
-  $('#phase-eyebrow').textContent = phase.name;
+  $('#phase-eyebrow').textContent = `${phase.name} · week ${WK.weekNo} of ${WK.weeks}${deload ? ' · deload' : ''}${testWeek ? ' · test week' : ''}`;
   $('#week-title').textContent = `Week of ${d3.timeFormat('%b %-d')(monday)}`;
   $('#focus').textContent = phase.focus;
   const tile = (l, v, s, ok) => { const t = el('div', 'tile'); t.append(el('div', 'lab', l), el('div', 'num' + (ok ? ' ok' : ''), v), el('div', 'sub', s)); return t; };
   $('#targets').replaceChildren(
     tile('Aerobic', `${Math.round(doneAer)} / ${weekAer} min`, `Mostly ${z2lo}–${z2hi} bpm`, doneAer >= weekAer),
-    tile('Climbing days', `${doneClimb} / ${climbTarget}`, climb.length === 3 ? 'Limit bouldering + rock' : 'Gym + outdoor', doneClimb >= climbTarget),
+    tile('Climbing days', `${doneClimb} / ${climbTarget}`, climb.map((c) => c.title.split(' · ')[0].split(' + ')[0]).join(', ').slice(0, 48), doneClimb >= climbTarget),
     tile('Strength', `${doneStr} / 1`, focus.map((k) => AREAS[k][0]).join(' + '), doneStr >= 1),
     tile('Long day', doneLong ? 'Done' : `${Math.round(longMin / 6) / 10} h`, `~${vertTarget.toLocaleString()} ft vert`, doneLong),
     tile('Readiness', rToday != null ? `${rToday}/10` : '—', rToday != null ? BAND(rToday) : 'Not logged today', rToday != null && rToday >= 5),
@@ -198,6 +232,14 @@
   ];
   if (known) why.unshift(`Scheduled around your work calendar: ${avail.filter((a) => a === 'open').length} open day${avail.filter((a) => a === 'open').length === 1 ? '' : 's'} this week, so ${unplaced.length ? 'some sessions didn\'t fit: ' + unplaced.join(', ') + '. Do them if a day opens up, or let them go; the week still counts' : 'everything fits'}. Nothing lands on a recovery day, and hard climbing days aren't back to back.`);
   else why.unshift('No work schedule loaded for this week yet, so this is the default layout. Move sessions around shifts as needed.');
+  if (deload) why.unshift(`Deload week (week ${WK.weekNo} of ${phase.name.split(' · ')[0]}): the plan runs 3 building weeks then 1 lighter one. Aerobic is about 60% of normal and every session is roughly half volume, so the next block starts fresh.`);
+  else if (['base', 'build'].includes(phase.type) && phase.cycle !== 'now') {
+    const nextD = Math.ceil(WK.weekNo / 4) * 4;
+    why.unshift(nextD > WK.weeks || (WK.weekNo === WK.weeks && ['taper', 'peak'].includes(nextPhase.type))
+      ? `Week ${WK.weekNo} of ${WK.weeks} in ${phase.name.split(' · ')[0]}. ${['taper', 'peak'].includes(nextPhase.type) ? 'The taper that follows does the job of a deload.' : 'A new block starts after this one.'}`
+      : `Week ${WK.weekNo} of ${WK.weeks} in ${phase.name.split(' · ')[0]}. Blocks run 3 building weeks then a lighter deload week; the next one is week ${nextD}.`);
+  }
+  if (testWeek) why.unshift('Test week: one session is the full test (max hang, 2-rep-max pull-up, 60% repeaters, side split). Do it on a rested day; the results set your hangboard loads for the next block and show up on the Strength tab.');
   if (readinessNote) why.unshift(readinessNote);
   $('#why-list').replaceChildren(...why.map((t) => el('li', null, t)));
 

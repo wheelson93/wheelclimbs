@@ -10,6 +10,7 @@
   const DAY = 864e5, today = new Date();
   const dt = (d) => new Date(d + 'T12:00:00');
   const fmtDate = (d) => dt(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const iso = d3.timeFormat('%Y-%m-%d');
   const lb = (kg) => Math.round(kg * LB);
   const signed = (kg) => (kg > 0 ? '+' : kg < 0 ? '−' : '') + (kg ? Math.abs(lb(kg)) + ' lb' : 'bodyweight');
   const e1rm = (load, reps) => load * (1 + Math.min(reps, 12) / 30);
@@ -99,6 +100,34 @@
     });
     bm.append(g);
   });
+
+  // ---------- tests (max hang, 2-rep-max pull-up, 60% repeaters, side split) ----------
+  const TESTS = [
+    { key: 'hang_test', label: 'Max hang test', how: '7 s on 20 mm, most weight held', v: (e) => e.added_kg, show: (e) => `${signed(e.added_kg)} · ${Math.round((100 * (BW + e.added_kg)) / BW)}% of bodyweight${e.edge_mm && e.edge_mm !== 20 ? ' · ' + e.edge_mm + ' mm' : ''}`, d: (x) => `${x > 0 ? '+' : '−'}${Math.abs(lb(x))} lb`, train: (e) => `Train max hangs at about ${signed(0.85 * (BW + e.added_kg) - BW)} (85%).` },
+    { key: 'pull_test', label: '2-rep-max pull-up', how: 'heaviest weight for 2 clean reps', v: (e) => e.added_kg, show: (e) => `${signed(e.added_kg)} × 2`, d: (x) => `${x > 0 ? '+' : '−'}${Math.abs(lb(x))} lb` },
+    { key: 'repeater_test', label: '60% repeaters', how: '7 s on / 3 s off at 60% of max hang, reps to failure', v: (e) => e.reps, show: (e) => `${e.reps} reps`, d: (x) => `${x > 0 ? '+' : '−'}${Math.abs(x)} reps` },
+    { key: 'side_split', label: 'Side split', how: 'foot-to-foot span, measured the same way each time', v: (e) => e.cm, show: (e) => `${e.cm} cm`, d: (x) => `${x > 0 ? '+' : '−'}${Math.abs(x)} cm` },
+  ];
+  const tl = $('#test-list');
+  let lastTestDate = null;
+  TESTS.forEach((t) => {
+    const list = of(t.key).filter((e) => t.v(e) != null).sort((a, b) => (a.date < b.date ? 1 : -1));
+    const [cur, prev] = list;
+    if (cur && (!lastTestDate || cur.date > lastTestDate)) lastTestDate = cur.date;
+    const row = el('div', 'ld-row');
+    const l = el('div'); l.append(el('div', null, t.label), el('div', 'm', t.how));
+    const r = el('div', 'n');
+    if (!cur) r.append(el('span', 'm', 'not tested'));
+    else {
+      r.append(el('div', null, t.show(cur)));
+      r.append(el('div', 'm', fmtDate(cur.date) + (prev ? ` · ${t.d(t.v(cur) - t.v(prev))} since ${fmtDate(prev.date)}` : '')));
+      if (t.train) r.append(el('div', 'm', t.train(cur)));
+    }
+    row.append(l, r); tl.append(row);
+  });
+  const nextTest = (window.WC && WC.testWeeks || []).find((w) => w >= iso(d3.timeMonday(today)));
+  $('#testdue').append(el('span', 'badge' + (nextTest && nextTest === iso(d3.timeMonday(today)) ? ' due' : ''), nextTest && nextTest === iso(d3.timeMonday(today)) ? 'test week' : 'next test'),
+    document.createTextNode(nextTest ? ` Week of ${fmtDate(nextTest)}. ${lastTestDate ? 'Last tested ' + fmtDate(lastTestDate) + '.' : 'No baseline yet; the first test sets your starting loads.'}` : ' No more test weeks in the plan.'));
 
   // ---------- mobility ----------
   const MOB = [
@@ -204,7 +233,7 @@
 
   // ---------- exercise history ----------
   const pick = $('#hist-pick');
-  const keys = [...by.keys()].filter((k) => !MOB.some((m) => m.key === k)).sort((a, b) => by.get(b).length - by.get(a).length);
+  const keys = [...by.keys()].filter((k) => !MOB.some((m) => m.key === k) && !TESTS.some((t) => t.key === k)).sort((a, b) => by.get(b).length - by.get(a).length);
   const metric = (k) => {
     const list = by.get(k);
     if (list.some((e) => e.load_kg && e.reps)) return { name: 'Estimated 1-rep max', unit: 'kg', f: (e) => (e.load_kg && e.reps ? e1rm(e.load_kg, e.reps) : null) };

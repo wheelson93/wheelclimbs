@@ -34,14 +34,20 @@
     const start = dt('2026-11-01'), end = dt(WC.phases[WC.phases.length - 1].to);
     const x = d3.scaleTime([start, end], [m.l, W - m.r]);
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
-    const cols = ['--c4', '--c1', '--c2', '--c0', '--c0', '--c3', '--c2', '--c3'];
+    const TC = { prep: '--c4', base: '--c1', build: '--c2', taper: '--c3', peak: '--c0', recover: '--c4' };
     WC.phases.forEach((p, i) => {
       const a = Math.max(x(dt(p.from)), m.l), b = x(d3.timeDay.offset(dt(p.to), 1));
       if (b <= m.l) return;
       svg.append('rect').attr('x', a).attr('y', 24).attr('width', Math.max(0, b - a - 2)).attr('height', 16).attr('rx', 3)
-        .style('fill', `var(${cols[i % cols.length]})`).attr('opacity', p === phase ? 1 : 0.55)
+        .style('fill', `var(${TC[p.type] || '--c4'})`).attr('opacity', p === phase ? 1 : 0.55)
         .append('title').text(`${p.name}: ${fmt(dt(p.from))} – ${fmt(dt(p.to))}`);
     });
+    // deload and test weeks
+    for (let w = d3.timeMonday.ceil(start); w <= end; w = d3.timeWeek.offset(w, 1)) {
+      const info = WC.weekInfo(iso(w));
+      if (info.deload) svg.append('rect').attr('x', x(w)).attr('y', 24).attr('width', Math.max(1, x(d3.timeWeek.offset(w, 1)) - x(w) - 1)).attr('height', 16).style('fill', css('--bg')).attr('opacity', 0.55).append('title').text(`Deload week of ${fmt(w)}`);
+      if (info.test) svg.append('circle').attr('cx', x(w) + 3).attr('cy', 46).attr('r', 2.5).style('fill', css('--fg')).append('title').text(`Test week of ${fmt(w)}`);
+    }
     svg.append('g').attr('transform', `translate(0,${H - 18})`).call(d3.axisBottom(x).ticks(d3.timeMonth.every(W < 500 ? 2 : 1)).tickFormat(d3.timeFormat('%b')).tickSize(0))
       .call((g) => g.select('.domain').remove()).call((g) => g.selectAll('text').style('fill', css('--muted')));
     const mark = (d, label, color, y) => {
@@ -53,10 +59,12 @@
     mark(G.exum.date, '⛰ Exum', css('--c0'), 12);
     mark(G.g512.date, '5.12', css('--c0'), 12);
   })();
+  $('#type-legend').replaceChildren(...[['prep', '--c4'], ['base', '--c1'], ['build', '--c2'], ['taper', '--c3'], ['peak', '--c0']].map(([t, c]) => { const sp = el('span'); const sw = el('i', 'sw'); sw.style.background = `var(${c})`; sp.append(sw, document.createTextNode(WC.TYPE_LABEL[t])); return sp; }));
   const pl = $('#phase-list');
   WC.phases.filter((p) => p.to >= tISO).forEach((p) => {
     const r = el('div', 'pl-item' + (p === phase ? ' on' : ''));
-    r.append(el('div', 'pl-when', `${fmt(dt(p.from))} – ${fmt(dt(p.to))}`), el('b', null, p.name), el('div', 'pl-focus', p.focus));
+    const wks = Math.round((dt(p.to) - dt(p.from)) / (7 * DAY) + 1 / 7);
+    r.append(el('div', 'pl-when', `${WC.TYPE_LABEL[p.type]} · ${fmt(dt(p.from))} – ${fmt(dt(p.to))} · ${wks} wk`), el('b', null, p.name), el('div', 'pl-focus', p.focus));
     pl.append(r);
   });
 
