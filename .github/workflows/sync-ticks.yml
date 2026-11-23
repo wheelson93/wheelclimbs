@@ -1,0 +1,23 @@
+name: Sync ticks from Mountain Project
+on:
+  schedule:
+    - cron: "17 10 * * *"   # nightly, ~3–4am Denver
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pull tick export
+        env:
+          MP_PROFILE: ${{ vars.MP_PROFILE }}
+        run: python3 sync_ticks.py
+      - name: Commit if changed
+        run: |
+          if git diff --quiet ticks.csv; then echo "No new ticks"; exit 0; fi
+          git config user.name "wheelclimbs-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Sync ticks from Mountain Project"
+          git push
