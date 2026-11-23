@@ -1,0 +1,449 @@
+{
+ "updated": "2026-11-22",
+ "source": "Strava (seeded by Claude; nightly sync replaces this once connected)",
+ "thresholds": {
+  "aet": 122,
+  "aet_range": [
+   118,
+   125
+  ],
+  "aet_basis": "Estimated from the 2026-07-14 run: 8.8% pace:HR drift at ~129 bpm means AeT sits below that; ~122 is the working estimate until a proper 60-min test.",
+  "aet_measured": false,
+  "ant": 166,
+  "ant_range": [
+   163,
+   170
+  ],
+  "ant_basis": "Estimated from your max-HR setting in Strava (threshold zone starts at 167); no field test on record.",
+  "ant_measured": false,
+  "max_hr_est": 187
+ },
+ "drift_tests": [
+  {
+   "id": "19318339665",
+   "date": "2026-07-14",
+   "name": "Night Run (informal)",
+   "sport": "Run",
+   "steady_min": 40,
+   "start_hr": 129,
+   "hr1": 128.9,
+   "hr2": 130.0,
+   "pa_hr_drift_pct": 8.8,
+   "protocol": "informal",
+   "verdict": "Above AeT: pace faded 8.8% at a constant ~129 bpm (pass is <5%). Run was only 50 min with hills, so treat as a rough check."
+  }
+ ],
+ "activities": [
+  {
+   "id": "21076774603",
+   "date": "2026-11-21",
+   "sport": "Walk",
+   "name": "Afternoon Walk",
+   "mi": 2.255,
+   "moving_min": 41.0,
+   "elapsed_min": 42.6,
+   "vert_ft": 171,
+   "hr_note": "HR looked like a sensor dropout (\u224866 bpm throughout); excluded from zone totals"
+  },
+  {
+   "id": "21014460949",
+   "date": "2026-11-16",
+   "sport": "Hike",
+   "name": "Afternoon Hike",
+   "mi": 2.584,
+   "moving_min": 85.9,
+   "elapsed_min": 130.8,
+   "vert_ft": 980,
+   "avg_hr": 110,
+   "zones_min": [
+    88.3,
+    18.5,
+    24.0,
+    0.0
+   ]
+  },
+  {
+   "id": "20260988651",
+   "date": "2026-09-20",
+   "sport": "Run",
+   "name": "Afternoon Run",
+   "mi": 2.682,
+   "moving_min": 32.7,
+   "elapsed_min": 33.3,
+   "vert_ft": 112,
+   "avg_hr": 125,
+   "zones_min": [
+    5.4,
+    1.7,
+    26.2,
+    0.0
+   ]
+  },
+  {
+   "id": "20247138492",
+   "date": "2026-09-19",
+   "sport": "StairStepper",
+   "name": "Afternoon Stair-Stepper",
+   "mi": 0.0,
+   "moving_min": 15.0,
+   "elapsed_min": 15.0,
+   "vert_ft": 0
+  },
+  {
+   "id": "20247136605",
+   "date": "2026-09-19",
+   "sport": "StairStepper",
+   "name": "Afternoon Stair-Stepper",
+   "mi": 0.0,
+   "moving_min": 5.0,
+   "elapsed_min": 5.0,
+   "vert_ft": 0
+  },
+  {
+   "id": "20164361161",
+   "date": "2026-09-13",
+   "sport": "StairStepper",
+   "name": "Afternoon Stair-Stepper",
+   "mi": 0.0,
+   "moving_min": 10.1,
+   "elapsed_min": 10.1,
+   "vert_ft": 0
+  },
+  {
+   "id": "20163864999",
+   "date": "2026-09-13",
+   "sport": "StairStepper",
+   "name": "Afternoon Stair-Stepper",
+   "mi": 0.0,
+   "moving_min": 5.1,
+   "elapsed_min": 5.1,
+   "vert_ft": 0
+  },
+  {
+   "id": "19508978492",
+   "date": "2026-07-27",
+   "sport": "Alpine",
+   "name": "North Face, Lone Eagle Peak",
+   "mi": 8.547,
+   "moving_min": 0.0,
+   "elapsed_min": 1837.2,
+   "vert_ft": 0
+  },
+  {
+   "id": "19318339665",
+   "date": "2026-07-14",
+   "sport": "Run",
+   "name": "Night Run",
+   "mi": 4.006,
+   "moving_min": 49.8,
+   "elapsed_min": 49.9,
+   "vert_ft": 184,
+   "avg_hr": 127,
+   "zones_min": [
+    1.2,
+    7.8,
+    40.9,
+    0.0
+   ]
+  },
+  {
+   "id": "19076884583",
+   "date": "2026-06-25",
+   "sport": "TrailRun",
+   "name": "Afternoon Trail Run",
+   "mi": 4.065,
+   "moving_min": 212.7,
+   "elapsed_min": 212.8,
+   "vert_ft": 1545,
+   "avg_hr": 105,
+   "zones_min": [
+    137.6,
+    27.0,
+    46.8,
+    1.4
+   ]
+  },
+  {
+   "id": "19017949099",
+   "date": "2026-06-21",
+   "sport": "Run",
+   "name": "Night Run",
+   "mi": 3.006,
+   "moving_min": 34.8,
+   "elapsed_min": 34.9,
+   "vert_ft": 131,
+   "zones_min": [
+    1.3,
+    1.7,
+    31.8,
+    0.0
+   ]
+  },
+  {
+   "id": "18868863909",
+   "date": "2026-06-09",
+   "sport": "Run",
+   "name": "Night Run",
+   "mi": 2.005,
+   "moving_min": 26.5,
+   "elapsed_min": 26.5,
+   "vert_ft": 108,
+   "zones_min": [
+    0.4,
+    1.3,
+    24.7,
+    0.0
+   ]
+  },
+  {
+   "id": "15947209748",
+   "date": "2025-09-26",
+   "sport": "Hike",
+   "name": "Afternoon Hike",
+   "mi": 4.276,
+   "moving_min": 128.8,
+   "elapsed_min": 185.1,
+   "vert_ft": 1243
+  },
+  {
+   "id": "15405232302",
+   "date": "2025-08-09",
+   "sport": "Walk",
+   "name": "Evening Walk",
+   "mi": 2.59,
+   "moving_min": 60.5,
+   "elapsed_min": 60.5,
+   "vert_ft": 0
+  },
+  {
+   "id": "15018119956",
+   "date": "2025-07-05",
+   "sport": "Hike",
+   "name": "Morning Hike",
+   "mi": 4.879,
+   "moving_min": 141.5,
+   "elapsed_min": 353.6,
+   "vert_ft": 2293
+  },
+  {
+   "id": "13901062708",
+   "date": "2025-03-10",
+   "sport": "Hike",
+   "name": "Afternoon Hike",
+   "mi": 2.822,
+   "moving_min": 57.6,
+   "elapsed_min": 62.4,
+   "vert_ft": 79
+  },
+  {
+   "id": "13827616032",
+   "date": "2025-03-08",
+   "sport": "Hike",
+   "name": "Lunch Hike",
+   "mi": 5.152,
+   "moving_min": 122.2,
+   "elapsed_min": 133.8,
+   "vert_ft": 886
+  },
+  {
+   "id": "13595243616",
+   "date": "2025-02-10",
+   "sport": "Hike",
+   "name": "Afternoon Hike",
+   "mi": 2.492,
+   "moving_min": 80.7,
+   "elapsed_min": 103.3,
+   "vert_ft": 800
+  },
+  {
+   "id": "13461671791",
+   "date": "2025-01-26",
+   "sport": "Walk",
+   "name": "Afternoon Walk",
+   "mi": 2.649,
+   "moving_min": 55.3,
+   "elapsed_min": 60.5,
+   "vert_ft": 26
+  },
+  {
+   "id": "13330022214",
+   "date": "2025-01-11",
+   "sport": "Hike",
+   "name": "Lunch Hike",
+   "mi": 3.898,
+   "moving_min": 115.2,
+   "elapsed_min": 137.6,
+   "vert_ft": 915
+  },
+  {
+   "id": "13157689234",
+   "date": "2024-12-20",
+   "sport": "Walk",
+   "name": "Afternoon Walk",
+   "mi": 0.997,
+   "moving_min": 22.0,
+   "elapsed_min": 23.4,
+   "vert_ft": 108
+  },
+  {
+   "id": "13151769572",
+   "date": "2024-12-19",
+   "sport": "Walk",
+   "name": "Afternoon Walk",
+   "mi": 1.392,
+   "moving_min": 31.5,
+   "elapsed_min": 32.9,
+   "vert_ft": 89
+  },
+  {
+   "id": "13138196551",
+   "date": "2024-12-17",
+   "sport": "Run",
+   "name": "Afternoon Run",
+   "mi": 0.299,
+   "moving_min": 10.3,
+   "elapsed_min": 10.3,
+   "vert_ft": 3
+  },
+  {
+   "id": "13033853342",
+   "date": "2024-12-02",
+   "sport": "Walk",
+   "name": "Afternoon Walk",
+   "mi": 0.77,
+   "moving_min": 19.6,
+   "elapsed_min": 30.1,
+   "vert_ft": 56
+  },
+  {
+   "id": "13033849721",
+   "date": "2024-12-02",
+   "sport": "Run",
+   "name": "Afternoon Run",
+   "mi": 0.778,
+   "moving_min": 8.6,
+   "elapsed_min": 9.1,
+   "vert_ft": 62
+  },
+  {
+   "id": "13027049803",
+   "date": "2024-12-01",
+   "sport": "Hike",
+   "name": "Afternoon Hike",
+   "mi": 3.431,
+   "moving_min": 80.4,
+   "elapsed_min": 91.2,
+   "vert_ft": 577
+  },
+  {
+   "id": "12480280005",
+   "date": "2024-09-22",
+   "sport": "Walk",
+   "name": "Afternoon Walk",
+   "mi": 2.713,
+   "moving_min": 56.5,
+   "elapsed_min": 60.3,
+   "vert_ft": 207
+  },
+  {
+   "id": "11915810314",
+   "date": "2024-07-17",
+   "sport": "Walk",
+   "name": "Evening Walk",
+   "mi": 2.633,
+   "moving_min": 45.1,
+   "elapsed_min": 48.7,
+   "vert_ft": 154
+  },
+  {
+   "id": "11292859942",
+   "date": "2024-04-14",
+   "sport": "Walk",
+   "name": "Evening Walk",
+   "mi": 1.588,
+   "moving_min": 33.4,
+   "elapsed_min": 33.4,
+   "vert_ft": 66
+  },
+  {
+   "id": "11176018984",
+   "date": "2024-04-13",
+   "sport": "Hike",
+   "name": "Afternoon Hike",
+   "mi": 5.553,
+   "moving_min": 127.9,
+   "elapsed_min": 134.3,
+   "vert_ft": 958
+  },
+  {
+   "id": "11108935597",
+   "date": "2024-04-04",
+   "sport": "Hike",
+   "name": "Evening Hike",
+   "mi": 3.227,
+   "moving_min": 69.5,
+   "elapsed_min": 70.9,
+   "vert_ft": 571
+  },
+  {
+   "id": "11079875917",
+   "date": "2024-03-31",
+   "sport": "Walk",
+   "name": "Afternoon Walk",
+   "mi": 2.025,
+   "moving_min": 42.3,
+   "elapsed_min": 45.1,
+   "vert_ft": 56
+  },
+  {
+   "id": "11072766641",
+   "date": "2024-03-30",
+   "sport": "Hike",
+   "name": "Afternoon Hike",
+   "mi": 2.938,
+   "moving_min": 66.0,
+   "elapsed_min": 67.3,
+   "vert_ft": 535
+  },
+  {
+   "id": "11058620118",
+   "date": "2024-03-28",
+   "sport": "Hike",
+   "name": "Afternoon Hike",
+   "mi": 3.182,
+   "moving_min": 71.9,
+   "elapsed_min": 76.2,
+   "vert_ft": 581
+  },
+  {
+   "id": "11045602962",
+   "date": "2024-03-26",
+   "sport": "Walk",
+   "name": "Afternoon Walk",
+   "mi": 2.126,
+   "moving_min": 44.7,
+   "elapsed_min": 48.1,
+   "vert_ft": 69
+  },
+  {
+   "id": "11024118966",
+   "date": "2024-03-23",
+   "sport": "Walk",
+   "name": "Afternoon Walk",
+   "mi": 1.93,
+   "moving_min": 38.6,
+   "elapsed_min": 39.9,
+   "vert_ft": 95
+  },
+  {
+   "id": "10796285496",
+   "date": "2024-02-19",
+   "sport": "Walk",
+   "name": "Afternoon Walk",
+   "mi": 1.332,
+   "moving_min": 29.5,
+   "elapsed_min": 30.2,
+   "vert_ft": 85
+  }
+ ]
+}

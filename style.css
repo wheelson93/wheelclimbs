@@ -106,3 +106,29 @@ td.dt{white-space:nowrap;color:var(--muted)}
 @media (max-width:640px){.hide-sm{display:none}}
 .foot{font-size:13px;color:var(--muted);text-align:center;padding-top:8px}
 .empty{color:var(--muted);font-size:14px;padding:12px 0}
+.links a.on{background:var(--fg);color:var(--bg)}
+.thr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.thr .t{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg)}
+.thr .v{font-family:var(--serif);font-size:34px;line-height:1.1;font-variant-numeric:tabular-nums}
+.thr .r{font-size:13px;color:var(--muted)}
+.badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--track);color:var(--muted);margin-left:6px;vertical-align:middle}
+.badge.ok{background:color-mix(in srgb,var(--ok) 20%,transparent);color:var(--ok)}
+.badge.due{background:color-mix(in srgb,var(--c0) 18%,transparent);color:var(--c0)}
+.hrbar{position:relative;height:56px;margin:8px 0 4px}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px;margin:4px 0 12px}
+.dl dt{color:var(--muted)}
+.dl dd{margin:0;font-variant-numeric:tabular-nums}
+.retest{border-radius:10px;padding:12px 14px;background:var(--bg);border:1px solid var(--line);font-size:15px;margin-bottom:10px}
+.retest b{font-weight:600}
+.how{font-size:14px}
+.how summary{cursor:pointer;color:var(--c0);font-weight:600}
+.how ol{padding-left:1.2rem;margin:8px 0 0;display:flex;flex-direction:column;gap:4px}
+.ld-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ld-row:last-child{border-bottom:0}
+.ld-row .m{color:var(--muted);font-size:13px}
+.ld-row .n{font-variant-numeric:tabular-nums;text-align:right;flex:none}
+.heat{display:grid;grid-template-rows:repeat(7,1fr);grid-auto-flow:column;gap:3px}
+.heat div{aspect-ratio:1;border-radius:3px;background:var(--track)}
+.int-row{display:grid;grid-template-columns:5.5rem 1fr;gap:8px;align-items:center;font-size:13px;margin-bottom:6px}
+.int-row .lb{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.int-bar{display:flex;height:14px;border-radius:4px;overflow:hidden;background:var(--track)}

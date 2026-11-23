@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wheel Climbs — aerobic base</title>
+<meta name="description" content="Will's aerobic training: thresholds, heart-rate drift tests, volume, vert and climbing rate.">
+<meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M2 28 12 8l5 9 4-6 9 17z' fill='%23c2562b'/></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="nav" aria-label="Sections">
+  <a class="brand" href="./">Wheel<span>Climbs</span></a>
+  <div class="links">
+    <a href="./">Climbing</a><a href="aerobic.html" class="on">Aerobic</a><a href="#thresholds">Thresholds</a><a href="#drift">Drift test</a><a href="#volume">Volume</a>
+  </div>
+</nav>
+
+<main class="wrap" id="top">
+  <header class="hero">
+    <p class="eyebrow">Aerobic base · mountain fitness</p>
+    <h1>Engine room</h1>
+    <p class="lede" id="lede">—</p>
+  </header>
+
+  <section class="tiles" id="tiles"></section>
+
+  <div class="grid">
+    <section class="card" id="thresholds">
+      <h2>Current thresholds</h2>
+      <p class="note">Heart rate, bpm. Estimates until a field test confirms them.</p>
+      <div class="thr" id="thr"></div>
+      <div id="hrbar" class="hrbar"></div>
+      <p class="note" id="gapnote"></p>
+    </section>
+
+    <section class="card" id="drift">
+      <h2>Heart-rate drift test</h2>
+      <p class="note">Steady 60 min at one effort: if pace (or HR) drifts less than 5%, you were at or below AeT.</p>
+      <div id="driftlast"></div>
+      <div class="retest" id="retest"></div>
+      <details class="how"><summary>How to run the test</summary>
+        <ol>
+          <li>Flat loop or treadmill at 1% grade. Rested, not after a hard day.</li>
+          <li>Warm up 15 min, easing up to the target HR (start ~<span class="aetv">122</span> bpm).</li>
+          <li>Hold the <b>same pace</b> for 60 min — don't chase HR.</li>
+          <li>Name the Strava activity <b>“Drift test”</b>; the site finds it and scores it overnight.</li>
+          <li>Under 5% drift → AeT is at least that HR, try 3–5 bpm higher next time. Over 5% → retest 5 bpm lower.</li>
+        </ol>
+      </details>
+    </section>
+  </div>
+
+  <section class="card" id="volume">
+    <div class="head">
+      <div><h2>Weekly aerobic volume</h2><p class="note">Moving hours by type, with vert climbed. Last 26 weeks.</p></div>
+      <div class="seg" id="vol-metric" role="group" aria-label="Measure"><button data-v="hours" aria-pressed="true">Hours</button><button data-v="vert" aria-pressed="false">Vert</button></div>
+    </div>
+    <div class="legend" id="vol-legend"></div>
+    <div class="chart" id="vol-chart"><div class="tip"></div></div>
+  </section>
+
+  <div class="grid">
+    <section class="card" id="intensity">
+      <h2>Intensity mix</h2>
+      <p class="note">Minutes per session relative to your AeT. Base building wants most time at or just below it.</p>
+      <div class="legend" id="int-legend"></div>
+      <div id="int-chart"></div>
+    </section>
+    <section class="card" id="climbrate">
+      <h2>Climbing rate</h2>
+      <p class="note">Feet gained per moving hour on hikes and trail runs with 300+ ft of vert.</p>
+      <div class="chart" id="cr-chart"><div class="tip"></div></div>
+    </section>
+  </div>
+
+  <div class="grid">
+    <section class="card" id="longdays">
+      <h2>Biggest days</h2>
+      <p class="note">By time out. Long-day capacity is the alpine test.</p>
+      <div id="long-list"></div>
+    </section>
+    <section class="card" id="consistency">
+      <h2>Consistency</h2>
+      <p class="note">Aerobic days, last 26 weeks. Darker = longer.</p>
+      <div id="heat"></div>
+    </section>
+  </div>
+
+  <footer class="foot">Data: Strava, updated <span id="updated">—</span>. Thresholds are estimates unless marked measured.</footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="aerobic.js"></script>
+</body>
+</html>
