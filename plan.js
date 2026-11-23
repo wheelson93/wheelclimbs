@@ -305,7 +305,7 @@
     tile('Aerobic', `${Math.round(doneAer)} / ${weekAer} min`, `Mostly ${z2lo}–${z2hi} bpm`, doneAer >= weekAer),
     tile('Climbing days', `${doneClimb} / ${climbTarget}`, climb.map((c) => c.title.split(' · ')[0].split(' + ')[0]).join(', ').slice(0, 48), doneClimb >= climbTarget),
     tile('Strength', `${doneStr} / 1`, focus.map((k) => AREAS[k][0]).join(' + '), doneStr >= 1),
-    tile('Long day', doneLong ? 'Done' : `${Math.round(longMin / 6) / 10} h`, `~${vertTarget.toLocaleString()} ft vert`, doneLong),
+    tile('Long day', doneLong ? 'Done' : `${Math.round(longMin / 6) / 10} h`, `~${longVert.toLocaleString()} ft vert${longPack ? ` · ${longPack} lb` : ""}`, doneLong),
     tile('Readiness', rToday != null ? `${rToday}/10` : '—', rToday != null ? BAND(rToday) : 'Not logged today', rToday != null && rToday >= 5),
     tile(testDue ? 'Drift test' : 'Next drift test', testDue ? 'Due' : d3.timeFormat('%b %-d')(new Date(new Date(lastTest.date + 'T12:00:00').getTime() + 42 * DAY)), testDue ? 'Wednesday slot' : 'Every 6 weeks', false),
   );

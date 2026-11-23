@@ -5,7 +5,7 @@
    Edit dates here and every page follows. Phase dates should start on a Monday. */
 window.WC = {
   goals: {
-    exum: { name: 'Exum Ridge, Grand Teton', short: 'Exum', date: '2027-07-24', note: 'Late July (exact date TBD). Stretch: Casual Route on Longs Peak.', vertFt: 5000, packLb: 30 },
+    exum: { name: 'Exum Ridge, Grand Teton', short: 'Exum', date: '2027-07-24', note: 'Late July (exact date TBD). Stretch: Casual Route on Longs Peak.', vertFt: 5000, packLb: 30 }, // two-day trip (Lower Saddle camp), ~30 lb pack: confirmed by Will
     g512: { name: 'Back to 5.12', short: '5.12', date: '2027-11-15', note: 'A clean lead of a 5.12a by mid-November, most likely a Clear Creek project.' },
   },
   // type: prep | base | build | taper | peak | recover. cycle: which goal the phase serves.
