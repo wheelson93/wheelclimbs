@@ -83,7 +83,8 @@
     const v = ft100(gVert * (WK.weekNo <= 3 ? 0.5 : 0.75)), pk = lb5(gPack * (WK.weekNo <= 3 ? 0.75 : 1));
     MID = { kind: 'aerobic', title: 'Hill climb · Zone 3, boots + pack', detail: `${v.toLocaleString()} ft of sustained uphill (repeats on a shorter hill are fine) with ${pk} lb, in mountain boots, hard but steady at ${z3lo}–${z3hi} bpm. This is the hardest aerobic session of the week; keep the day before and after easy.`, min: Math.max(midMin, Math.round(v / 1000 * 30)) };
   }
-  if (testWeek && !testDue) MID = { kind: 'aerobic', title: 'Box step test', detail: `Leg benchmark: 1,000 ft of step-ups (1,000 steps on a 12-inch box), in boots, with a ${lb5(BWlb * 0.2)} lb pack (20% of bodyweight). Count with a clicker and go as fast as you can sustain. Log it in Strava as "box step test 1000ft 38:20".`, min: 60 };
+  const boxTest = ` Test week: start with the box step test before anything else: 1,000 steps on a 12-inch box (1,000 ft), in boots, with a ${lb5(BWlb * 0.2)} lb pack (20% of bodyweight), as fast as you can sustain. Log it as "box step test 1000ft 38:20".`;
+  if (testWeek && !testDue) MID = { kind: 'aerobic', title: 'AnT test', detail: `Threshold time trial, rested: 15 min easy warm-up, then 30 min solo as hard as you can hold evenly, uphill or on a treadmill at 6–8%. Stop the recording the moment the 30 min ends and name it "AnT test" in Strava; the site takes your average HR over the last 20 min as your anaerobic threshold (now ${T.ant}${T.ant_measured ? '' : ', estimated'}).`, min: 60 };
   // Flexibility (names match the training app). Rest days rotate hips / hamstrings / ankles by week; deload, taper and peak weeks just maintain.
   const flexEasy = deload || ['taper', 'peak'].includes(phase.type);
   const FLEX = flexEasy ? 'Flexibility Maintenance (12 min: kicks, pancake, frog, pigeon, couch, calf, pec and lat stretches, short holds)'
@@ -122,11 +123,15 @@
     core: ['core', coreTxt],
     legs: ['legs', legsTxt],
   };
+  // Base 2 and Build: legs get their work from water-jug carries and hill climbs, so they leave the rotation (Training for the New Alpinism).
+  const alpineLegs = ['base2', 'build1'].includes(phase.key);
+  if (alpineLegs) delete AREAS.legs;
+  const legMaint = alpineLegs && WK.weekNo % 2 === 0 && !deload ? ' Leg maintenance (every other week): Goblet Squat 3 × 5 heavy and fast, nothing more; the carries and hill climbs do the rest.' : '';
   const lastDone = {};
   ((ST && ST.sessions) || []).forEach((x) => (x.entries || []).forEach((e) => { if (AREAS[e.cat] && (!lastDone[e.cat] || x.date > lastDone[e.cat])) lastDone[e.cat] = x.date; }));
   const focus = Object.keys(AREAS).sort((a, b) => (lastDone[a] || '0').localeCompare(lastDone[b] || '0')).slice(0, 2);
   const KB = { kind: 'strength', title: `Strength · ${focus.map((k) => AREAS[k][0]).join(' + ')}${deload ? ' · deload' : ''}`,
-    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : 'About 55 min. General Warm Up first (leg swings, split squats, horse stance, scap press ups, band face pulls). '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Finish with ${forearmTxt} for the forearms. Aim for about an hour. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
+    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : 'About 55 min. General Warm Up first (leg swings, split squats, horse stance, scap press ups, band face pulls). '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Finish with ${forearmTxt} for the forearms.${legMaint}${testWeek ? boxTest : ''} Aim for about an hour. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
   // Climbing sessions per phase, named after the Lattice session library. Arrays are [c1, out] or [c1, c2, out].
   // Fingerboard work goes first in a session (before climbing); weights live on the separate strength day.
   const C = (title, detail) => ({ kind: 'climb', title, detail });
@@ -218,6 +223,8 @@
     ? [['out', climb[2], climb[2].hard], ['test', TEST, false], ['long', LONG_, false], ['c1', climb[0], climb[0].hard], ['c2', climb[1], climb[1].hard], ['kb', KB, false]]
     : climb.length === 2 ? [['out', climb[1], climb[1].hard], ['test', TEST, false], ['long', LONG_, false], ['c1', climb[0], climb[0].hard], ['kb', KB, false]]
     : [['out', climb[0], true], ['test', TEST, false]];
+  // Base 2 and Build: the long day is the priority for Exum, so it gets first pick of open days ahead of outdoor climbing.
+  if (['base2', 'build1'].includes(phase.key)) sessionsWanted.sort((a, b) => (b[0] === 'long') - (a[0] === 'long'));
   if (['taper', 'peak'].includes(phase.type)) sessionsWanted = sessionsWanted.filter(([k]) => k !== 'kb' && (phase.type !== 'peak' || k !== 'long'));
   if (phase.type === 'recover') sessionsWanted = sessionsWanted.filter(([k]) => k !== 'test');
   // how well each session fits each kind of day (0 = not allowed)
@@ -347,7 +354,8 @@
       ? `Week ${WK.weekNo} of ${WK.weeks} in ${phase.name.split(' · ')[0]}. ${['taper', 'peak'].includes(nextPhase.type) ? 'The taper that follows does the job of a deload.' : 'A new block starts after this one.'}`
       : `Week ${WK.weekNo} of ${WK.weeks} in ${phase.name.split(' · ')[0]}. Blocks run 3 building weeks then a lighter deload week; the next one is week ${nextD}.`);
   }
-  if (testWeek) why.unshift('Test week: one session is the full test (half-crimp and front-three max hangs, 2-rep-max pull-up, 60% repeaters, side split). Do it on a rested day; the results set your hangboard loads for the next block and show up on the Strength tab.');
+  if (['base2', 'build1'].includes(phase.key)) why.push('Exum phase: the long day gets first pick of open days. If it is the only open day, make it a long approach with an easy climb at the end. Legs are out of the strength rotation; the carries and hill climbs train them.');
+  if (testWeek) why.unshift('Test week: one session is the full test (half-crimp and front-three max hangs, 2-rep-max pull-up, 60% repeaters, side split), the midweek run is a 30-min AnT time trial, and strength day opens with the box step test. Do it on a rested day; the results set your hangboard loads for the next block and show up on the Strength tab.');
   if (readinessNote) why.unshift(readinessNote);
   $('#why-list').replaceChildren(...why.map((t) => el('li', null, t)));
 
