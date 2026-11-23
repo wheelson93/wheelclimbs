@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wheel Climbs — this week</title>
+<meta name="description" content="Will's training plan for the week: climbing, zone 2, strength and long days.">
+<meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M2 28 12 8l5 9 4-6 9 17z' fill='%23c2562b'/></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="nav" aria-label="Sections">
+  <a class="brand" href="./">Wheel<span>Climbs</span></a>
+  <div class="links">
+    <a href="plan.html" class="on">This week</a><a href="./">Climbing</a><a href="aerobic.html">Aerobic</a>
+  </div>
+</nav>
+
+<main class="wrap" id="top">
+  <header class="hero">
+    <p class="eyebrow" id="phase-eyebrow">—</p>
+    <h1 id="week-title">This week</h1>
+    <p class="lede" id="focus">—</p>
+  </header>
+
+  <section class="tiles" id="targets"></section>
+
+  <section class="card" id="days">
+    <div class="head">
+      <div><h2>The week</h2><p class="note">Days are a suggestion. Swap them around shifts; the weekly totals are what matter. Sessions check off when Strava or Mountain Project logs them.</p></div>
+    </div>
+    <div id="day-list"></div>
+  </section>
+
+  <div class="grid">
+    <section class="card" id="why">
+      <h2>Why this week looks like this</h2>
+      <ul class="why" id="why-list"></ul>
+    </section>
+    <section class="card" id="season">
+      <h2>Where you are in the season</h2>
+      <p class="note">Road back to 5.12, from the climbing plan.</p>
+      <div id="phase-strip"></div>
+    </section>
+  </div>
+
+  <footer class="foot">Generated in your browser from Strava and Mountain Project data, updated <span id="updated">—</span>. Rules-based suggestions, not medical advice.</footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="plan.js"></script>
+</body>
+</html>

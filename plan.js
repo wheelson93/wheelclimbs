@@ -1,0 +1,138 @@
+/* Wheel Climbs — weekly plan. Built in the browser from aerobic.json + ticks.csv. */
+(async function () {
+  const $ = (s) => document.querySelector(s);
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  const [D, tickText] = await Promise.all([
+    fetch('aerobic.json', { cache: 'no-cache' }).then((r) => r.json()),
+    fetch('ticks.csv', { cache: 'no-cache' }).then((r) => r.text()),
+  ]);
+  const T = D.thresholds;
+  const DAY = 864e5;
+  const iso = (d) => d3.timeFormat('%Y-%m-%d')(d);
+  const today = d3.timeDay(new Date());
+  const monday = d3.timeMonday(today);
+  const days = d3.range(7).map((i) => d3.timeDay.offset(monday, i));
+  const ticks = d3.csvParse(tickText);
+  const acts = D.activities || [];
+  const sessions = D.sessions || [];
+  const z2lo = T.aet - 15, z2hi = T.aet;
+  $('#updated').textContent = d3.timeFormat('%b %-d, %Y')(new Date(D.updated + 'T12:00:00'));
+
+  // ---------- phase ----------
+  const md = (d) => d3.timeFormat('%m-%d')(d);
+  const PHASES = [
+    { key: 'fall', name: 'Fall · own 5.10', from: '09-01', to: '11-30', focus: 'Finish Free Willie and rack up 5.10b–d onsights while building an aerobic base.' },
+    { key: 'winter', name: 'Winter · strength block', from: '12-01', to: '02-28', focus: 'Limit bouldering and hangboard twice a week, kettlebells as the base, and sunny-day 5.11a/b redpoints outside.' },
+    { key: 'spring', name: 'Spring · volume at 5.11', from: '03-01', to: '05-15', focus: 'Several 5.11a–c redpoints at Clear Creek, the same run-up that came before Badgersaurus and Hellbender.' },
+    { key: 'project', name: 'Summer · 5.12a project', from: '05-16', to: '08-31', focus: 'One steep, bolt-close Clear Creek 5.12a. Siege it on fresh days, two or three goes max.' },
+  ];
+  const inPhase = (p, d) => (p.from <= p.to ? md(d) >= p.from && md(d) <= p.to : md(d) >= p.from || md(d) <= p.to);
+  const phase = PHASES.find((p) => inPhase(p, today)) || PHASES[0];
+  const nextPhase = PHASES[(PHASES.indexOf(phase) + 1) % PHASES.length];
+
+  // ---------- recent load ----------
+  const within = (dateStr, from, to) => dateStr >= iso(from) && dateStr < iso(to);
+  const fourAgo = d3.timeWeek.offset(monday, -4);
+  const aerMin4 = d3.sum(acts.filter((a) => within(a.date, fourAgo, monday)), (a) => a.moving_min || 0) / 4;
+  const climbDates = new Set([...sessions.filter((s) => s.sport === 'RockClimbing').map((s) => s.date), ...ticks.map((t) => t.Date)]);
+  const climbs4 = [...climbDates].filter((d) => within(d, fourAgo, monday)).length / 4;
+  const round15 = (m) => Math.round(m / 15) * 15;
+  const aerTarget = Math.min(360, Math.max(90, round15(aerMin4 * 1.2)));
+  const midMin = Math.max(40, round15(aerTarget * 0.4));
+  const longMin = Math.max(60, aerTarget - midMin);
+  const vertTarget = Math.round((longMin / 60) * 600 / 100) * 100;
+  const lastTest = (D.drift_tests || []).slice().sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+  const testDue = !lastTest || lastTest.protocol !== 'test' || (today - new Date(lastTest.date + 'T12:00:00')) / DAY >= 42;
+  const climbTarget = phase.key === 'winter' ? 3 : 2;
+  const easeIn = climbs4 < 1;
+
+  // ---------- templates (Mon..Sun) ----------
+  const Z2 = (min, extra) => ({ kind: 'aerobic', title: 'Zone 2', detail: `${min} min at ${z2lo}–${z2hi} bpm. Incline walk, stair stepper or easy trail. Walk the hills if HR climbs past ${z2hi}.${extra ? ' ' + extra : ''}`, min });
+  const DRIFT = { kind: 'drift', title: 'Drift test', detail: `15 min warm-up, then 60 min at one steady pace starting around ${T.aet} bpm on a flat loop or treadmill at 1%. Name it “Drift test” in Strava and the site scores it overnight.`, min: 75 };
+  const LONG = { kind: 'aerobic', title: 'Long day', detail: `${Math.floor(longMin / 60)}h${longMin % 60 ? ' ' + (longMin % 60) + 'm' : ''} hike with ~${vertTarget.toLocaleString()} ft of vert, mostly under ${z2hi} bpm. North Table, Galbraith or Mt Falcon all work close to home.`, min: longMin };
+  const REST = (t) => ({ kind: 'rest', title: t || 'Rest', detail: 'Off, or an easy walk. Good day for mobility: hips, shoulders, fingers.' });
+  const KB = { kind: 'strength', title: 'Kettlebells', detail: '30–40 min: swings, goblet squats, presses, Turkish get-ups. Finish with core and antagonists (push-ups, reverse wrist curls).' };
+  const climb = {
+    fall: [{ kind: 'climb', title: 'Gym routes', detail: easeIn ? '6–8 routes 5.9–5.10c, lead if you can. Focus on clipping rhythm and taking a few practice falls.' : '8–10 routes, 5.10a–5.11a. Lead, onsight style; take a couple of practice falls.' },
+           { kind: 'climb', title: 'Outdoor climbing', detail: 'Free Willie: 2–3 burns max, rested. Fill the day with 5.10b–d onsights (to-do list on the Climbing tab). Gym route volume if the weather is bad.' }],
+    winter: [{ kind: 'climb', title: 'Limit bouldering + hangboard', detail: 'Warm up well, then 4–6 problems near your max with full 3–4 min rests. Finish with hangboard: 6 × 10 s on a 20 mm edge, 3 min rest.' },
+             { kind: 'climb', title: 'Limit bouldering', detail: 'Same as Tuesday but stop when the quality drops. Skip it if fingers are sore.' },
+             { kind: 'climb', title: 'Sunny-day redpoint', detail: 'Clear Creek or Golden Cliffs: a 5.11a/b redpoint. Gym routes (5.10+ to 5.11) if it is cold or snowy.' }],
+    spring: [{ kind: 'climb', title: 'Gym routes · power endurance', detail: '4×4s on 5.10 routes, or 3 laps on a hard 5.11 with 5 min rest.' },
+             { kind: 'climb', title: 'Outdoor 5.11 redpoints', detail: 'Clear Creek 5.11a–c. Two routes worked, one sent is a good day.' }],
+    project: [{ kind: 'climb', title: 'Gym bouldering', detail: 'Moves like the project: steep pulls, crimps. Short, high quality.' },
+              { kind: 'climb', title: 'Project day', detail: 'Warm up thoroughly, then 2–3 burns on the 5.12a. Rest and stop while still fresh.' }],
+  }[phase.key];
+  let plan;
+  if (phase.key === 'winter') plan = [REST(), climb[0], testDue ? DRIFT : Z2(midMin), KB, climb[1], climb[2], LONG];
+  else plan = [REST(), climb[0], testDue ? DRIFT : Z2(midMin), KB, REST('Rest / easy'), climb[1], LONG];
+
+  const weekAer = d3.sum(plan, (p) => (p.kind === 'aerobic' || p.kind === 'drift' ? p.min : 0));
+
+  // ---------- what actually happened this week ----------
+  const onDay = (d) => {
+    const s = iso(d);
+    return {
+      aerobic: acts.filter((a) => a.date === s),
+      drift: acts.filter((a) => a.date === s && /drift/i.test(a.name)),
+      climb: [...sessions.filter((x) => x.date === s && x.sport === 'RockClimbing'), ...ticks.filter((t) => t.Date === s).slice(0, 1)],
+      strength: sessions.filter((x) => x.date === s && x.sport !== 'RockClimbing'),
+    };
+  };
+  const weekActs = days.map(onDay);
+  const doneAer = d3.sum(weekActs, (w) => d3.sum(w.aerobic, (a) => a.moving_min || a.elapsed_min || 0));
+  const doneClimb = weekActs.filter((w) => w.climb.length).length;
+  const doneStr = weekActs.filter((w) => w.strength.length).length;
+  const doneLong = weekActs.some((w) => w.aerobic.some((a) => (a.moving_min || 0) >= longMin * 0.8));
+
+  // ---------- header + tiles ----------
+  $('#phase-eyebrow').textContent = phase.name;
+  $('#week-title').textContent = `Week of ${d3.timeFormat('%b %-d')(monday)}`;
+  $('#focus').textContent = phase.focus;
+  const tile = (l, v, s, ok) => { const t = el('div', 'tile'); t.append(el('div', 'lab', l), el('div', 'num' + (ok ? ' ok' : ''), v), el('div', 'sub', s)); return t; };
+  $('#targets').replaceChildren(
+    tile('Aerobic', `${Math.round(doneAer)} / ${weekAer} min`, `Mostly ${z2lo}–${z2hi} bpm`, doneAer >= weekAer),
+    tile('Climbing days', `${doneClimb} / ${climbTarget}`, phase.key === 'winter' ? 'Limit bouldering + rock' : 'Gym + outdoor', doneClimb >= climbTarget),
+    tile('Strength', `${doneStr} / 1`, 'Kettlebells + antagonists', doneStr >= 1),
+    tile('Long day', doneLong ? 'Done' : `${Math.round(longMin / 6) / 10} h`, `~${vertTarget.toLocaleString()} ft vert`, doneLong),
+    tile(testDue ? 'Drift test' : 'Next drift test', testDue ? 'Due' : d3.timeFormat('%b %-d')(new Date(new Date(lastTest.date + 'T12:00:00').getTime() + 42 * DAY)), testDue ? 'Wednesday slot' : 'Every 6 weeks', false),
+  );
+
+  // ---------- day list ----------
+  const list = $('#day-list');
+  days.forEach((d, i) => {
+    const p = plan[i], w = weekActs[i];
+    const hit = p.kind === 'rest' ? null : (w[p.kind] || []).length ? w[p.kind] : p.kind === 'drift' && w.aerobic.length ? w.aerobic : null;
+    const anyOther = !hit && p.kind !== 'rest' && (w.aerobic.length || w.climb.length || w.strength.length);
+    const status = hit ? 'done' : +d === +today ? 'today' : d < today ? (p.kind === 'rest' ? 'rest' : anyOther ? 'swapped' : 'missed') : 'up';
+    const row = el('div', 'pl-row ' + status + (p.kind === 'rest' ? ' is-rest' : ''));
+    const left = el('div', 'pl-day'); left.append(el('div', 'dn', d3.timeFormat('%a')(d)), el('div', 'dd', d3.timeFormat('%-d')(d)));
+    const main = el('div', 'pl-main');
+    const h = el('div', 'pl-title'); h.append(el('span', 'k k-' + p.kind), document.createTextNode(p.title));
+    main.append(h, el('div', 'pl-detail', p.detail));
+    const logged = [...w.aerobic, ...w.climb, ...w.strength];
+    if (logged.length) main.append(el('div', 'pl-log', 'Logged: ' + logged.map((a) => (a.name || a.Route) + (a.moving_min ? ` (${Math.round(a.moving_min)} min)` : a.minutes ? ` (${Math.round(a.minutes)} min)` : '')).join(' · ')));
+    const badge = { done: '✓ done', today: 'today', missed: 'missed', swapped: 'swapped', rest: '', up: '' }[status];
+    const r = el('div', 'pl-status'); if (badge) r.append(el('span', 'badge ' + (status === 'done' ? 'ok' : status === 'today' ? 'due' : ''), badge));
+    row.append(left, main, r); list.append(row);
+  });
+
+  // ---------- why ----------
+  const why = [
+    `Aerobic target is ${weekAer} min${testDue ? ' (the drift test adds to the usual ' + aerTarget + ')' : ''}: your last 4 weeks averaged ${Math.round(aerMin4)} min/week. The plan adds about 20% (with a 90-min floor) so the base grows without a jump that leaves you flat for climbing.`,
+    `Zone 2 is capped at ${z2hi} bpm, your estimated aerobic threshold. Most of your recent runs sat in the gray zone above it, so slow down here; this is where the base gets built.`,
+    testDue ? `Wednesday is a drift test, not ordinary zone 2: your last check was ${lastTest ? (lastTest.protocol === 'test' ? 'over 6 weeks ago' : 'an informal run in ' + d3.timeFormat('%B')(new Date(lastTest.date + 'T12:00:00'))) : 'never'}, and a measured threshold makes every zone on this page accurate.` : `No drift test this week; the next one is 6 weeks after the last.`,
+    easeIn ? `Climbing has been light (${climbs4.toFixed(1)} days/week lately), so the gym day is a volume-and-falling session rather than a max effort.` : `You've been climbing about ${climbs4.toFixed(1)} days/week, so the plan holds two quality days with rest between.`,
+    phase.key === 'fall' && (new Date(today.getFullYear(), 10, 30) - today) / DAY < 10 ? `This is the last week of the fall phase. The winter strength block (limit bouldering + hangboard) starts ${d3.timeFormat('%b %-d')(new Date(today.getFullYear(), 11, 1))}.` : `Next phase: ${nextPhase.name}.`,
+  ];
+  $('#why-list').replaceChildren(...why.map((t) => el('li', null, t)));
+
+  // ---------- phase strip ----------
+  const strip = el('div', 'phases-strip');
+  PHASES.forEach((p) => {
+    const s = el('div', 'ph' + (p === phase ? ' on' : ''));
+    s.append(el('div', 'pn', p.name.split(' · ')[1]), el('div', 'pd', p.name.split(' · ')[0]));
+    strip.append(s);
+  });
+  $('#phase-strip').replaceChildren(strip);
+})();

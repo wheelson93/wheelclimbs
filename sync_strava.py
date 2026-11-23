@@ -88,8 +88,13 @@ def main():
             break
         page += 1
 
+    OTHER = {"RockClimbing": "climb", "WeightTraining": "strength", "Workout": "strength", "HighIntensityIntervalTraining": "strength", "Crossfit": "strength", "Yoga": "mobility"}
+    sessions = {x["id"]: x for x in data.get("sessions", [])}
     new = 0
     for r in raw:
+        if (r.get("sport_type") or r.get("type")) in OTHER and not DRIFT_RE.search(r.get("name", "")) and r.get("elapsed_time", 0) < 14400:
+            sessions[str(r["id"])] = {"id": str(r["id"]), "date": r["start_date_local"][:10], "sport": r.get("sport_type") or r.get("type"),
+                                      "name": r.get("name", ""), "minutes": round(r.get("moving_time", 0) / 60, 1)}
         sport, aid, name = r.get("sport_type") or r.get("type"), str(r["id"]), r.get("name", "")
         is_drift, is_ant = bool(DRIFT_RE.search(name)), bool(ANT_RE.search(name))
         if sport not in AEROBIC and not (is_drift or is_ant):
@@ -141,6 +146,7 @@ def main():
                      aet_basis=f"{d['date']} drift test drifted {d['pa_hr_drift_pct']}% at {d['start_hr']} bpm, so AeT is below that; ~{est} until the next test.")
 
     data["activities"] = sorted(known.values(), key=lambda a: a["date"], reverse=True)
+    data["sessions"] = sorted(sessions.values(), key=lambda a: a["date"], reverse=True)
     data["drift_tests"] = sorted(tests.values(), key=lambda d: d["date"], reverse=True)
     data["updated"] = date.today().isoformat()
     data["source"] = "Strava API (nightly sync)"
