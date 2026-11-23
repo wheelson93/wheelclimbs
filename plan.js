@@ -69,15 +69,29 @@
   const C = (title, detail) => ({ kind: 'climb', title, detail });
   // Hangboard block from fingers.js: tier and sets follow the phase, the week of the block and deloads.
   const FB = WC.fingerText(WC.fingers(phase.key, WK));
+  // Strength and power workouts (names match the training app). Base 1 moves from submaximal to max by block.
+  const SP = {
+    mileage: ['boulder mileage', 'Boulder Mileage: one boulder every 3 min for up to 60 min (20 problems). Pick ones you can flash or send in 2 tries; challenging, never limit.'],
+    intervals: ['strength intervals', 'Strength Intervals: 4 sets × 3 hard (not limit) boulders on the Tension, Kilter or gym wall, 5 min between sets. Every rep should go; if one fails twice, swap it.'],
+    pyramid: ['boulder pyramid', 'Boulder Pyramid: 15 boulders, 2.5 min rest, climbing up through the grades to your max and back down. Two tries per boulder at most.'],
+    board: ['board session', 'Board Session on the Tension or Kilter: 6 sets of 6 min, each on one hard problem with up to 3 tries, 6 min rest between sets.'],
+    flash: ['flashing boulders', 'Flashing Boulders: up to 15 problems at your flash grade, one try each after a careful read, 4 min rest. Mix styles and angles.'],
+    boardMax: ['board max efforts', 'Board Max Efforts on the Tension or Kilter: 60 min on problems at your absolute limit (multi-session projects welcome), full rest between goes.'],
+    boulderMax: ['boulder max efforts', 'Boulder Max Efforts: 60 min on limit gym boulders that look like the project (holds, angle), full rest between goes.'],
+  };
+  const blk = Math.ceil(WK.weekNo / 4);
+  const spBase1 = SP[blk === 1 ? 'intervals' : blk === 2 ? 'pyramid' : 'board'];
+  const spBuild2 = SP[WK.weekNo % 2 ? 'boardMax' : 'boulderMax'];
+  const HB = (sp) => C('Hangboard + ' + sp[0], `${FB} Then ${sp[1]} Plan on 75–90 min including the hangboard.`);
   let climb = {
     fall: [C('Gym routes', easeIn ? '6–8 routes 5.9–5.10c, lead if you can. Focus on clipping rhythm and taking a few practice falls.' : '8–10 routes, 5.10a–5.11a. Lead, onsight style; take a couple of practice falls.'),
            C('Outdoor climbing', 'Free Willie: 2–3 burns max, rested. Fill the day with 5.10b–d onsights (to-do list on the Climbing tab). Gym route volume if the weather is bad.')],
-    prep1: [C('Hangboard + boulder mileage', `${FB} Then boulder mileage: one moderate problem every 3 minutes for 40–60 min. Nothing near max.`),
+    prep1: [C('Hangboard + boulder mileage', `${FB} Then ${SP.mileage[1].replace('up to 60 min (20 problems)', '40–60 min')} Nothing near max in prep.`),
             C('Route mileage', 'Outdoor or gym routes: lots of 5.9–5.10c leads and a few practice falls. Stop with energy to spare.')],
-    base1: [C('Hangboard + strength intervals', `${FB} Then strength intervals: 4 hard boulders, 3 good tries each with 3–4 min rest. Two climbing elements, done.`),
+    base1: [HB(spBase1),
             C('Extended boulders + ARC', 'ARC 10 min very easy. Then extended boulders: a 15–20-move sequence, 4 laps × 3 sets, 3 min between laps, 5 min between sets. ARC 10 min to finish. Pump yes, failing every lap no.'),
             C('Sunny-day redpoint', 'Clear Creek or the Golden Cliffs: a 5.11a/b redpoint. If it\'s cold or snowy, a route pyramid in the gym instead.')],
-    base2: [C('Hangboard + flashing boulders', `${FB} Then 7 boulders around your flash level, 4 min each: read, commit, move on.`),
+    base2: [HB(SP.flash),
             C('Outdoor 5.11 redpoints', 'Clear Creek 5.11a–c. Two routes worked, one sent is a good day. In the gym: 10 on / 10 off (3 × 10 min continuous easy climbing).')],
     build1: [C('Gym routes · hold 5.11', FB + ' Then route doubles: 5 hard routes climbed twice with little rest, 10 min between sets. Keeps sport fitness while the mountain days take over.'),
              C('Trad multipitch', 'Eldo, Lumpy Ridge or Boulder Canyon 5.6–5.8 multipitch. Move fast: quick transitions, simul-climb easy ground, approach shoes on easy pitches. Treat it as Exum practice.')],
@@ -86,10 +100,10 @@
     peak1: [C('Exum Ridge', 'The objective. Everything else this week is rest, travel, and easy walks.')],
     rec1: [C('Open climbing', 'Whatever sounds fun, short session, stop fresh.'),
            C('Fun climbing day', 'Easy outdoor routes with friends. No projects, no training.')],
-    base3: [C('Hangboard + strength intervals', `${FB} Then strength intervals on board or gym boulders: 4 problems × 3 tries.`),
+    base3: [HB(SP.intervals),
             C('Extended boulders', 'A 15–20-move sequence, 4 laps × 3 sets, 3 min between laps, 5 min between sets. Increase difficulty once you can finish every lap.'),
             C('5.11 redpoints + project scouting', 'Clear Creek 5.11s, and a look at two or three 5.12a candidates: hang the draws, work the crux, note the holds and angle.')],
-    build2: [C('Hangboard + max efforts', `${FB} Then a half session of limit boulders in the project's style (holds, angle), and reps on boulders you've already done.`),
+    build2: [HB(spBuild2),
              C('4×4s', '4 boulders × 4 laps back-to-back, 4 sets, 5 min rest. Should only just get through the last set.'),
              C('Project day', 'Work the project: rehearse sections, then 1–2 redpoint burns. Stop while still pulling well.')],
     taper2: [C('Short power session', `${FB} Then a few hard boulders, full rest, under an hour. Leave feeling strong.`),
