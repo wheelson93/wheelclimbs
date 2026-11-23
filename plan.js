@@ -2,9 +2,10 @@
 (async function () {
   const $ = (s) => document.querySelector(s);
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
-  const [D, tickText] = await Promise.all([
+  const [D, tickText, AV] = await Promise.all([
     fetch('aerobic.json', { cache: 'no-cache' }).then((r) => r.json()),
     fetch('ticks.csv', { cache: 'no-cache' }).then((r) => r.text()),
+    fetch('availability.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   const T = D.thresholds;
   const DAY = 864e5;
@@ -50,7 +51,7 @@
   const Z2 = (min, extra) => ({ kind: 'aerobic', title: 'Zone 2', detail: `${min} min at ${z2lo}–${z2hi} bpm. Incline walk, stair stepper or easy trail. Walk the hills if HR climbs past ${z2hi}.${extra ? ' ' + extra : ''}`, min });
   const DRIFT = { kind: 'drift', title: 'Drift test', detail: `15 min warm-up, then 60 min at one steady pace starting around ${T.aet} bpm on a flat loop or treadmill at 1%. Name it “Drift test” in Strava and the site scores it overnight.`, min: 75 };
   const LONG = { kind: 'aerobic', title: 'Long day', detail: `${Math.floor(longMin / 60)}h${longMin % 60 ? ' ' + (longMin % 60) + 'm' : ''} hike with ~${vertTarget.toLocaleString()} ft of vert, mostly under ${z2hi} bpm. North Table, Galbraith or Mt Falcon all work close to home.`, min: longMin };
-  const REST = (t) => ({ kind: 'rest', title: t || 'Rest', detail: 'Off, or an easy walk. Good day for mobility: hips, shoulders, fingers.' });
+  const REST = (t, det) => ({ kind: 'rest', title: t || 'Rest', detail: det || 'Off, or an easy walk. Good day for mobility: hips, shoulders, fingers.' });
   const KB = { kind: 'strength', title: 'Kettlebells', detail: '30–40 min: swings, goblet squats, presses, Turkish get-ups. Finish with core and antagonists (push-ups, reverse wrist curls).' };
   const climb = {
     fall: [{ kind: 'climb', title: 'Gym routes', detail: easeIn ? '6–8 routes 5.9–5.10c, lead if you can. Focus on clipping rhythm and taking a few practice falls.' : '8–10 routes, 5.10a–5.11a. Lead, onsight style; take a couple of practice falls.' },
@@ -63,9 +64,44 @@
     project: [{ kind: 'climb', title: 'Gym bouldering', detail: 'Moves like the project: steep pulls, crimps. Short, high quality.' },
               { kind: 'climb', title: 'Project day', detail: 'Warm up thoroughly, then 2–3 burns on the 5.12a. Rest and stop while still fresh.' }],
   }[phase.key];
-  let plan;
-  if (phase.key === 'winter') plan = [REST(), climb[0], testDue ? DRIFT : Z2(midMin), KB, climb[1], climb[2], LONG];
-  else plan = [REST(), climb[0], testDue ? DRIFT : Z2(midMin), KB, REST('Rest / easy'), climb[1], LONG];
+  // ---------- schedule around work (availability.json from the calendar) ----------
+  const LONG_ = LONG, TEST = testDue ? DRIFT : Z2(midMin);
+  const sessionsWanted = phase.key === 'winter'
+    ? [['out', climb[2], true], ['test', TEST, false], ['long', LONG_, false], ['c1', climb[0], true], ['c2', climb[1], true], ['kb', KB, false]]
+    : [['out', climb[1], true], ['test', TEST, false], ['long', LONG_, false], ['c1', climb[0], true], ['kb', KB, false]];
+  // how well each session fits each kind of day (0 = not allowed)
+  const FIT = {
+    out:  { open: 10, afternoon: 4 },
+    long: { open: 9, afternoon: 6 },
+    test: { open: 8, morning: 9, afternoon: 7, evening: 3 },
+    c1:   { evening: 8, afternoon: 8, open: 6, morning: 4 },
+    c2:   { evening: 8, afternoon: 8, open: 6, morning: 4 },
+    kb:   { evening: 9, afternoon: 7, open: 5, morning: 6 },
+  };
+  const avail = days.map((d) => (AV && AV.days && AV.days[iso(d)]) || (AV && iso(d) <= AV.through ? 'open' : null));
+  const known = avail.every((a) => a);
+  let plan, unplaced = [];
+  if (known) {
+    plan = days.map((d, i) => (avail[i] === 'recover' ? REST('Recovery', 'Sleep first. If you feel good later, a 20–30 min easy walk is plenty; no training.') : avail[i] === 'none' ? REST('No training window', 'Long day at work. Nothing planned.') : null));
+    const hardOn = new Set();
+    for (const [key, sess, hard] of sessionsWanted) {
+      let best = -1, bestScore = 0;
+      days.forEach((d, i) => {
+        if (plan[i]) return;
+        if (d < today) return;
+        let sc = FIT[key][avail[i]] || 0;
+        if (!sc) return;
+        if (hard && (hardOn.has(i - 1) || hardOn.has(i + 1))) return;
+        if (key === 'long' && hardOn.has(i - 1)) sc -= 2;
+        if (sc > bestScore) { bestScore = sc; best = i; }
+      });
+      if (best >= 0) { plan[best] = sess; if (hard) hardOn.add(best); }
+      else unplaced.push(sess.title);
+    }
+    plan = plan.map((p, i) => p || REST(avail[i] === 'evening' ? 'Rest (work day)' : 'Rest / easy'));
+  } else if (phase.key === 'winter') plan = [REST(), climb[0], TEST, KB, climb[1], climb[2], LONG];
+  else plan = [REST(), climb[0], TEST, KB, REST('Rest / easy'), climb[1], LONG];
+  const AVLAB = { open: 'Open day', afternoon: 'Afternoon free', evening: 'Evening only', morning: 'Morning only', recover: 'Recovery', none: 'No window' };
 
   const weekAer = d3.sum(plan, (p) => (p.kind === 'aerobic' || p.kind === 'drift' ? p.min : 0));
 
@@ -107,6 +143,7 @@
     const status = hit ? 'done' : +d === +today ? 'today' : d < today ? (p.kind === 'rest' ? 'rest' : anyOther ? 'swapped' : 'missed') : 'up';
     const row = el('div', 'pl-row ' + status + (p.kind === 'rest' ? ' is-rest' : ''));
     const left = el('div', 'pl-day'); left.append(el('div', 'dn', d3.timeFormat('%a')(d)), el('div', 'dd', d3.timeFormat('%-d')(d)));
+    if (known) left.append(el('div', 'av av-' + avail[i], AVLAB[avail[i]]));
     const main = el('div', 'pl-main');
     const h = el('div', 'pl-title'); h.append(el('span', 'k k-' + p.kind), document.createTextNode(p.title));
     main.append(h, el('div', 'pl-detail', p.detail));
@@ -125,6 +162,8 @@
     easeIn ? `Climbing has been light (${climbs4.toFixed(1)} days/week lately), so the gym day is a volume-and-falling session rather than a max effort.` : `You've been climbing about ${climbs4.toFixed(1)} days/week, so the plan holds two quality days with rest between.`,
     phase.key === 'fall' && (new Date(today.getFullYear(), 10, 30) - today) / DAY < 10 ? `This is the last week of the fall phase. The winter strength block (limit bouldering + hangboard) starts ${d3.timeFormat('%b %-d')(new Date(today.getFullYear(), 11, 1))}.` : `Next phase: ${nextPhase.name}.`,
   ];
+  if (known) why.unshift(`Scheduled around your work calendar: ${avail.filter((a) => a === 'open').length} open day${avail.filter((a) => a === 'open').length === 1 ? '' : 's'} this week, so ${unplaced.length ? 'some sessions didn\'t fit: ' + unplaced.join(', ') + '. Do them if a day opens up, or let them go; the week still counts' : 'everything fits'}. Nothing lands on a recovery day, and hard climbing days aren't back to back.`);
+  else why.unshift('No work schedule loaded for this week yet, so this is the default layout. Move sessions around shifts as needed.');
   $('#why-list').replaceChildren(...why.map((t) => el('li', null, t)));
 
   // ---------- phase strip ----------
