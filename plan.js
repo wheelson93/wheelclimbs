@@ -2,11 +2,12 @@
 (async function () {
   const $ = (s) => document.querySelector(s);
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
-  const [D, tickText, AV, ST] = await Promise.all([
+  const [D, tickText, AV, ST, RD] = await Promise.all([
     fetch('aerobic.json', { cache: 'no-cache' }).then((r) => r.json()),
     fetch('ticks.csv', { cache: 'no-cache' }).then((r) => r.text()),
     fetch('availability.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
     fetch('strength.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+    fetch('readiness.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   const T = D.thresholds;
   const DAY = 864e5;
@@ -117,6 +118,24 @@
   else plan = [REST(), climb[0], TEST, KB, REST('Rest / easy'), climb[1], LONG];
   const AVLAB = { open: 'Open day', afternoon: 'Afternoon free', evening: 'Evening only', morning: 'Morning only', recover: 'Recovery', none: 'No window' };
 
+  // ---------- Apple Watch readiness (0–10, logged each morning by an iPhone Shortcut) ----------
+  const ti = days.findIndex((d) => +d === +today);
+  const rToday = RD && RD.days ? RD.days[iso(today)] : null;
+  const BAND = (n) => (n >= 8 ? 'Go for it' : n >= 5 ? 'Ready' : n >= 2 ? 'Pace yourself' : 'Recover');
+  let readinessNote = null;
+  if (rToday != null && ti >= 0) {
+    const p = plan[ti], hard = ['climb', 'drift', 'strength'].includes(p.kind) || (p.kind === 'aerobic' && p.min >= 90);
+    if (rToday <= 1 && p.kind !== 'rest') {
+      plan[ti] = REST('Recover', `Readiness ${rToday}/10. Rest, or a 20–30 min easy walk at most. ${p.title} moves to the next open day if one comes up.`);
+      readinessNote = `Today's readiness is ${rToday}/10 (Recover), so ${p.title.toLowerCase()} came off today.`;
+    } else if (rToday <= 4 && hard) {
+      plan[ti] = p.kind === 'aerobic'
+        ? { ...p, title: 'Shorter long day', detail: `Readiness ${rToday}/10. Cut it to about ${Math.round(p.min / 2 / 15) * 15} min, all easy, under ${z2hi} bpm.`, min: Math.round(p.min / 2 / 15) * 15 }
+        : { kind: 'aerobic', title: 'Easy day', detail: `Readiness ${rToday}/10 (Pace yourself). 30–40 min easy walk or spin under ${z2lo} bpm plus 15 min of mobility. ${p.title} waits for a better day.`, min: 35 };
+      readinessNote = `Today's readiness is ${rToday}/10 (Pace yourself), so ${p.title.toLowerCase()} was swapped for something easy.`;
+    } else readinessNote = `Today's readiness is ${rToday}/10 (${BAND(rToday)}), so the plan stands.`;
+  }
+
   const weekAer = d3.sum(plan, (p) => (p.kind === 'aerobic' || p.kind === 'drift' ? p.min : 0));
 
   // ---------- what actually happened this week ----------
@@ -145,6 +164,7 @@
     tile('Climbing days', `${doneClimb} / ${climbTarget}`, climb.length === 3 ? 'Limit bouldering + rock' : 'Gym + outdoor', doneClimb >= climbTarget),
     tile('Strength', `${doneStr} / 1`, focus.map((k) => AREAS[k][0]).join(' + '), doneStr >= 1),
     tile('Long day', doneLong ? 'Done' : `${Math.round(longMin / 6) / 10} h`, `~${vertTarget.toLocaleString()} ft vert`, doneLong),
+    tile('Readiness', rToday != null ? `${rToday}/10` : '—', rToday != null ? BAND(rToday) : 'Not logged today', rToday != null && rToday >= 5),
     tile(testDue ? 'Drift test' : 'Next drift test', testDue ? 'Due' : d3.timeFormat('%b %-d')(new Date(new Date(lastTest.date + 'T12:00:00').getTime() + 42 * DAY)), testDue ? 'Wednesday slot' : 'Every 6 weeks', false),
   );
 
@@ -178,6 +198,7 @@
   ];
   if (known) why.unshift(`Scheduled around your work calendar: ${avail.filter((a) => a === 'open').length} open day${avail.filter((a) => a === 'open').length === 1 ? '' : 's'} this week, so ${unplaced.length ? 'some sessions didn\'t fit: ' + unplaced.join(', ') + '. Do them if a day opens up, or let them go; the week still counts' : 'everything fits'}. Nothing lands on a recovery day, and hard climbing days aren't back to back.`);
   else why.unshift('No work schedule loaded for this week yet, so this is the default layout. Move sessions around shifts as needed.');
+  if (readinessNote) why.unshift(readinessNote);
   $('#why-list').replaceChildren(...why.map((t) => el('li', null, t)));
 
   // ---------- phase strip ----------
