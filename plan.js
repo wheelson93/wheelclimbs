@@ -80,6 +80,15 @@
     boulderMax: ['boulder max efforts', 'Boulder Max Efforts: 60 min on limit gym boulders that look like the project (holds, angle), full rest between goes.'],
   };
   const blk = Math.ceil(WK.weekNo / 4);
+  // Aerobic base workouts (names match the training app). All on routes or circuits, never close to failure.
+  const AB = {
+    arcS: 'ARC Short: 10 min of continuous very easy climbing',
+    arcM: 'ARC Medium: 20 min of continuous very easy climbing, no pump',
+    arcL: 'ARC Long: 30 min of continuous very easy climbing, no pump',
+    fiveThree: '5 On 3 Off: 3 × 5 min very easy climbing, 3 min rest',
+    oneTwo: '1 On 2 Off: 10 × 1 min at moderate effort, 2 min rest',
+    acMileage: 'AC Boulder Mileage: 20 very easy boulders, about one a minute, smooth and rhythmic',
+  };
   // Power endurance workouts (names match the training app).
   const PE = {
     long: 'Long Boulders: one well-rehearsed ~14-move problem, 4 laps × 3 sets, hard, 5 min between sets.',
@@ -97,18 +106,18 @@
     fall: [C('Gym routes', easeIn ? '6–8 routes 5.9–5.10c, lead if you can. Focus on clipping rhythm and taking a few practice falls.' : '8–10 routes, 5.10a–5.11a. Lead, onsight style; take a couple of practice falls.'),
            C('Outdoor climbing', 'Free Willie: 2–3 burns max, rested. Fill the day with 5.10b–d onsights (to-do list on the Climbing tab). Gym route volume if the weather is bad.')],
     prep1: [C('Hangboard + boulder mileage', `${FB} Then ${SP.mileage[1].replace('up to 60 min (20 problems)', '40–60 min')} Nothing near max in prep.`),
-            C('Route mileage', 'Outdoor or gym routes: lots of 5.9–5.10c leads and a few practice falls. Stop with energy to spare.')],
+            C('Route mileage', `${AB.arcL} to start, then 5.9–5.10c leads outside or in the gym with a few practice falls. Stop with energy to spare.`)],
     base1: [HB(spBase1),
-            C(blk === 1 ? 'Long boulders' : 'Extended boulders', `10 min very easy climbing to warm up. Then ${blk === 1 ? PE.long : PE.ext} Pump yes, failing every lap no.`),
+            C(blk === 1 ? 'Long boulders' : 'Extended boulders', `${AB.arcS} to warm up. Then ${blk === 1 ? PE.long : PE.ext} Pump yes, failing every lap no. Finish with ${AB.oneTwo}.`),
             C('Sunny-day redpoint', `Clear Creek or the Golden Cliffs: a 5.11a/b redpoint. If it's cold or snowy, gym instead: ${PE.pyramid}`)],
     base2: [HB(SP.flash),
             C('Outdoor 5.11 redpoints', `Clear Creek 5.11a–c. Two routes worked, one sent is a good day. Bad weather, gym instead: ${WK.weekNo % 2 ? PE.broken : PE.doubles}`)],
     build1: [C('Gym routes · hold 5.11', `${FB} Then ${PE.doubles} Keeps sport fitness while the mountain days take over.`),
              C('Trad multipitch', 'Eldo, Lumpy Ridge or Boulder Canyon 5.6–5.8 multipitch. Move fast: quick transitions, simul-climb easy ground, approach shoes on easy pitches. Treat it as Exum practice.')],
-    taper1: [C('Easy gym session', 'Short and easy, 5.9–5.10, a few moves of quality. Nothing that leaves you sore.'),
+    taper1: [C('Easy gym session', `${AB.arcM}, then a few quality moves on 5.9–5.10. Nothing that leaves you sore.`),
              C('Short mountain day', 'An easy alpine half-day or a few easy multipitch pitches. Sleep a lot this week.')],
     peak1: [C('Exum Ridge', 'The objective. Everything else this week is rest, travel, and easy walks.')],
-    rec1: [C('Open climbing', 'Whatever sounds fun, short session, stop fresh.'),
+    rec1: [C('Open climbing', `${AB.acMileage}, then whatever sounds fun. Short session, stop fresh.`),
            C('Fun climbing day', 'Easy outdoor routes with friends. No projects, no training.')],
     base3: [HB(SP.intervals),
             C('Extended boulders', `${PE.ext} Pick a harder problem once every lap goes.`),
@@ -119,7 +128,7 @@
     taper2: [C('Short power session', `${FB} Then a few hard boulders, full rest, under an hour. Leave feeling strong.`),
              C('Project burns (light)', 'Warm up, one or two burns on the project, done.')],
     peak2: [C('Gym bouldering · short', `${FB} Then moves like the project, 45 min max. Quality only.`),
-            C('ARC + mobility', '20 min very easy climbing, no pump, then hips and shoulders. An easy day, not training.'),
+            C('ARC + mobility', `${AB.arcM}, then hips and shoulders. An easy day, not training.`),
             C('Project day', 'Fresh skin, warm up thoroughly, 2–3 good burns on the 5.12a. Stop while still fresh.')],
   };
   climb = climb[phase.key] || climb.fall;
@@ -127,7 +136,7 @@
   if (testWeek) climb[0] = C('Test session', 'Fresh day, long warm-up with recruitment hangs. 1) Half crimp max hang (app: Half 4 – Hang – Max Test): 7 s on 20 mm, adding weight each go, up to 8 goes with 3 min rest; note the most you held. 2) Front-three open, same protocol, 4–6 goes. 3) 2-rep-max pull-up: up to 8 sets of 2, 3 min rest. 4) 60% repeaters: 60% of your two-arm half-crimp max (bodyweight plus added load), 7 s on / 3 s off until you can\'t hold; count reps (each rep is 10 s, so reps = total time ÷ 10). 5) Side split, once warm. Log each on its own line in Strava: "max hang test half 20mm +45lb", "max hang test f3 20mm +25lb", "2RM pull-up +50lb", "repeater test 24 reps", "side split 150cm".');
   // Deload week: roughly half volume, nothing to failure.
   climb.forEach((c) => (c.hard = c.title === 'Exum Ridge' || !/ARC|Open climbing|Fun climbing|Easy gym/.test(c.title)));
-  if (deload) climb = climb.map((c) => c.title === 'Test session' ? c : ({ ...c, title: c.title + ' · deload', detail: 'Deload week: about half the usual sets and nothing to failure; stop feeling fresh. ' + c.detail }));
+  if (deload) climb = climb.map((c) => c.title === 'Test session' ? c : ({ ...c, title: c.title + ' · deload', detail: `Deload week: if you're feeling run down, swap this for ${AB.fiveThree}. Otherwise about half the usual sets and nothing to failure; stop feeling fresh. ` + c.detail }));
   // ---------- schedule around work (availability.json from the calendar) ----------
   const LONG_ = LONG, TEST = testDue ? DRIFT : Z2(midMin);
   let sessionsWanted = climb.length === 3
