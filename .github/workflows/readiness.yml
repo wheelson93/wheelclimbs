@@ -1,0 +1,48 @@
+name: Log readiness score
+# Fired each morning by an iPhone Shortcut (repository_dispatch, event_type "readiness")
+# with client_payload {"score": 0-10, "date": "YYYY-MM-DD"}. Only the score is stored.
+on:
+  repository_dispatch:
+    types: [readiness]
+permissions:
+  contents: write
+concurrency: readiness
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Save score
+        env:
+          SCORE: ${{ github.event.client_payload.score }}
+          DAY: ${{ github.event.client_payload.date }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from datetime import date, datetime, timedelta
+          raw = str(os.environ.get("SCORE", "")).strip()
+          if not re.fullmatch(r"\d{1,2}(\.\d+)?", raw) or not 0 <= float(raw) <= 10:
+              raise SystemExit(f"Ignoring: score must be 0-10, got {raw!r}")
+          today = (datetime.utcnow() - timedelta(hours=7)).date()
+          day = os.environ.get("DAY", "").strip()[:10] or today.isoformat()
+          d = date.fromisoformat(day)
+          if abs((d - today).days) > 2:
+              raise SystemExit(f"Ignoring: date {day} is not within 2 days of today")
+          try:
+              data = json.load(open("readiness.json"))
+          except FileNotFoundError:
+              data = {"days": {}}
+          data["days"][day] = round(float(raw))
+          data["days"] = dict(sorted(data["days"].items())[-120:])
+          data["updated"] = day
+          json.dump(data, open("readiness.json", "w"), indent=1)
+          print(f"Readiness {day}: {data['days'][day]}")
+          PY
+      - name: Commit
+        run: |
+          git add readiness.json
+          if git diff --cached --quiet; then echo "No change"; exit 0; fi
+          git config user.name "wheelclimbs-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Log readiness"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
