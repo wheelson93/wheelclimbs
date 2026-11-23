@@ -26,6 +26,7 @@ CATALOG = [
     ("hang_test", "Max hang test", "test", "bw", r"max\s*hang\s*test|\bhang\s*test\b|\bmht\b"),
     ("pull_test", "2RM pull-up test", "test", "bw", r"\b2\s*rm\b|pull[\s-]?ups?\s*test"),
     ("repeater_test", "Repeater test", "test", "bw", r"\brepeaters?\s*test\b|\brepeaters?\b"),
+    ("box_test", "Box step test", "test", "bw", r"\bbox\s*step\s*test\b"),
     ("side_split", "Side split", "mobility", "test", r"\bside\s*split"),
     ("hang", "Hangboard", "pull", "bw", r"\bhang(board|s|ing)?\b|max\s*hang|\bedge\b"),
     ("pullup", "Pull-up", "pull", "bw", r"\b(pull|chin)[\s-]?ups?\b"),
@@ -82,7 +83,7 @@ RE_DIST = re.compile(NUM + r"\s*(cm|in|inch|inches)\b", re.I)
 RE_SIDE = re.compile(r"/\s*(side|leg|arm)|\b(per|each)\s*(side|leg|arm)\b|\bea\b|\beach\b", re.I)
 RE_PASS = re.compile(r"\b(pass(ed)?|yes|y|full|flat|clean|done|achieved)\b|✓|✔", re.I)
 RE_FAIL = re.compile(r"\b(fail(ed)?|no|not\s*yet|almost)\b|✗|✘", re.I)
-HOLDS = {"hang", "lsit", "side_plank", "back_ext", "hollow", "copenhagen", "plank", "lock_off", "engage"}
+HOLDS = {"box_test", "hang", "lsit", "side_plank", "back_ext", "hollow", "copenhagen", "plank", "lock_off", "engage"}
 LEVELS = [("palms", 3), ("knuckles", 2), ("fingertips", 1), ("fingers", 1), ("toes", 1), ("shins", 0), ("ankles", 0)]
 
 

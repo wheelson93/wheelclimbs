@@ -50,6 +50,40 @@
   const Z2 = (min, extra) => ({ kind: 'aerobic', title: 'Zone 2', detail: `${min} min at ${z2lo}–${z2hi} bpm. Incline walk, stair stepper or easy trail. Walk the hills if HR climbs past ${z2hi}.${extra ? ' ' + extra : ''}`, min });
   const DRIFT = { kind: 'drift', title: 'Drift test', detail: `15 min warm-up, then 60 min at one steady pace starting around ${T.aet} bpm on a flat loop or treadmill at 1%. Name it “Drift test” in Strava and the site scores it overnight.`, min: 75 };
   const LONG = { kind: 'aerobic', title: 'Long day', detail: `${Math.floor(longMin / 60)}h${longMin % 60 ? ' ' + (longMin % 60) + 'm' : ''} hike with ~${vertTarget.toLocaleString()} ft of vert, mostly under ${z2hi} bpm. North Table, Galbraith or Mt Falcon all work close to home.`, min: longMin };
+  // Alpine endurance (Training for the New Alpinism, applied). Goal-day numbers live in phases.js (goals.exum.vertFt / packLb).
+  const BWlb = Math.round(((ST && ST.bodyweight_kg) || 81) * 2.2046);
+  const gVert = WC.goals.exum.vertFt || 5000, gPack = WC.goals.exum.packLb || 30;
+  const lb5 = (x) => Math.max(5, Math.round(x / 5) * 5), ft100 = (x) => Math.round(x / 100) * 100;
+  const adGap = (T.ant - T.aet) / T.ant;       // AeT within ~10% of AnT = aerobic base ready for Zone 3 work
+  const baseReady = adGap <= 0.10;
+  const blk8 = ((WK.weekNo - 1) % 8) + 1;
+  const z3lo = T.ant - 15, z3hi = T.ant - 3;
+  // Long day: no pack in Base 1; Base 2 adds 10% of bodyweight, +5% every other week (max 30%); Build carries goal vertical with a growing share of the goal pack.
+  let longPack = 0, longVert = vertTarget, longNote = '';
+  if (phase.key === 'base2') longPack = lb5(BWlb * Math.min(0.30, 0.10 + 0.05 * Math.floor((WK.weekNo - 1) / 2)));
+  if (phase.key === 'build1') {
+    longVert = gVert; longPack = lb5(gPack * (WK.weekNo <= 2 ? 0.5 : WK.weekNo === 3 ? 0.6 : 1));
+    if (WK.weekNo === 5) longNote = ` Back-to-back big days if you can: about ${ft100(gVert * 1.5).toLocaleString()} ft over the two days with the full pack.`;
+    if (WK.weekNo === 6) longNote = ' Dress rehearsal: a big Colorado peak at goal-day vertical, full pack, all-day easy pace.';
+  }
+  if (deload) { longPack = longPack ? lb5(longPack / 2) : 0; longVert = ft100(longVert * 0.6); }
+  LONG.detail = `${Math.floor(longMin / 60)}h${longMin % 60 ? ' ' + (longMin % 60) + 'm' : ''} hike with ~${longVert.toLocaleString()} ft of vert${longPack ? `, carrying ${longPack} lb (water jugs work: 8 lb a gallon)` : ''}, mostly under ${z2hi} bpm (you should be able to breathe through your nose).${longNote} North Table, Galbraith or Mt Falcon close to home; bigger peaks when you can.`;
+  // Midweek aerobic session by phase.
+  let MID = Z2(midMin);
+  if (phase.key === 'base1' && !deload) {
+    MID = baseReady && blk8 >= 5 && blk8 <= 7
+      ? { kind: 'aerobic', title: 'Hill climb · Zone 3', detail: `${midMin} min: warm up 15 min, then 3–4 × 10 min of sustained uphill at ${z3lo}–${z3hi} bpm with easy walking down between. Stair stepper works.`, min: midMin }
+      : { kind: 'aerobic', title: 'Steep uphill · Zone 1', detail: `${midMin} min on the steepest sustained terrain you have (stair stepper on incline, Mt Sanitas, Green Mountain), at the top of ${z2lo}–${z2hi} bpm. Steep and slow beats flat and fast.`, min: midMin };
+  }
+  if (phase.key === 'base2' && !deload) {
+    const v = ft100(gVert * (0.5 + 0.5 * Math.min(1, (WK.weekNo - 1) / 10))), pk = lb5(BWlb * Math.min(0.25, 0.10 + 0.05 * Math.floor((WK.weekNo - 1) / 3)));
+    MID = { kind: 'aerobic', title: 'Water-jug carry', detail: `Muscular endurance: ${v.toLocaleString()} ft of steep uphill with ${pk} lb, in the boots you'll wear on ${WC.goals.exum.short}. Go at the top of nose-breathing pace; your legs, not your lungs, should be what slows you. Pour the water out on top and walk down easy. No hill? 12-inch box step-ups, ${v.toLocaleString()} steps.`, min: Math.max(midMin, Math.round(v / 1000 * 25)) };
+  }
+  if (phase.key === 'build1' && !deload) {
+    const v = ft100(gVert * (WK.weekNo <= 3 ? 0.5 : 0.75)), pk = lb5(gPack * (WK.weekNo <= 3 ? 0.75 : 1));
+    MID = { kind: 'aerobic', title: 'Hill climb · Zone 3, boots + pack', detail: `${v.toLocaleString()} ft of sustained uphill (repeats on a shorter hill are fine) with ${pk} lb, in mountain boots, hard but steady at ${z3lo}–${z3hi} bpm. This is the hardest aerobic session of the week; keep the day before and after easy.`, min: Math.max(midMin, Math.round(v / 1000 * 30)) };
+  }
+  if (testWeek && !testDue) MID = { kind: 'aerobic', title: 'Box step test', detail: `Leg benchmark: 1,000 ft of step-ups (1,000 steps on a 12-inch box), in boots, with a ${lb5(BWlb * 0.2)} lb pack (20% of bodyweight). Count with a clicker and go as fast as you can sustain. Log it in Strava as "box step test 1000ft 38:20".`, min: 60 };
   // Flexibility (names match the training app). Rest days rotate hips / hamstrings / ankles by week; deload, taper and peak weeks just maintain.
   const flexEasy = deload || ['taper', 'peak'].includes(phase.type);
   const FLEX = flexEasy ? 'Flexibility Maintenance (12 min: kicks, pancake, frog, pigeon, couch, calf, pec and lat stretches, short holds)'
@@ -179,7 +213,7 @@
   });
   if (deload) climb = climb.map((c) => c.title === 'Test session' ? c : ({ ...c, title: c.title + ' · deload', detail: `Deload week: if you're feeling run down, swap this for ${AB.fiveThree}. Otherwise about half the usual sets and nothing to failure; stop feeling fresh. ` + c.detail }));
   // ---------- schedule around work (availability.json from the calendar) ----------
-  const LONG_ = LONG, TEST = testDue ? DRIFT : Z2(midMin);
+  const LONG_ = LONG, TEST = testDue ? DRIFT : MID;
   let sessionsWanted = climb.length === 3
     ? [['out', climb[2], climb[2].hard], ['test', TEST, false], ['long', LONG_, false], ['c1', climb[0], climb[0].hard], ['c2', climb[1], climb[1].hard], ['kb', KB, false]]
     : climb.length === 2 ? [['out', climb[1], climb[1].hard], ['test', TEST, false], ['long', LONG_, false], ['c1', climb[0], climb[0].hard], ['kb', KB, false]]
@@ -299,7 +333,7 @@
   // ---------- why ----------
   const why = [
     `Aerobic target is ${weekAer} min${testDue ? ' (the drift test adds to the usual ' + aerTarget + ')' : ''}: your last 4 weeks averaged ${Math.round(aerMin4)} min/week. The plan adds about 20% (with a 90-min floor) so the base grows without a jump that leaves you flat for climbing.`,
-    `Zone 2 is capped at ${z2hi} bpm, your estimated aerobic threshold. Most of your recent runs sat in the gray zone above it, so slow down here; this is where the base gets built.`,
+    `Zone 2 on this site is everything under ${z2hi} bpm, your estimated aerobic threshold (what Training for the New Alpinism calls Zone 1). Your AeT is ${Math.round(adGap * 100)}% below your AnT (${T.ant}); ${baseReady ? 'that is within 10%, so the base can support Zone 3 hill climbs.' : 'until that gap is under about 10%, the base needs more easy volume and the plan holds off on Zone 3 hill work.'}`,
     testDue ? `Wednesday is a drift test, not ordinary zone 2: your last check was ${lastTest ? (lastTest.protocol === 'test' ? 'over 6 weeks ago' : 'an informal run in ' + d3.timeFormat('%B')(new Date(lastTest.date + 'T12:00:00'))) : 'never'}, and a measured threshold makes every zone on this page accurate.` : `No drift test this week; the next one is 6 weeks after the last.`,
     easeIn ? `Climbing has been light (${climbs4.toFixed(1)} days/week lately), so the gym day is a volume-and-falling session rather than a max effort.` : `You've been climbing about ${climbs4.toFixed(1)} days/week, so the plan holds two quality days with rest between.`,
     (dt(phase.to) - today) / DAY < 10 && nextPhase !== phase ? `This is the last stretch of ${phase.name.split(' · ')[1]}. ${nextPhase.name} starts ${d3.timeFormat('%b %-d')(dt(nextPhase.from))}.` : `Next phase: ${nextPhase.name}, from ${d3.timeFormat('%b %-d')(dt(nextPhase.from))}. Goals: ${WC.goals.exum.short} in July, ${WC.goals.g512.short} by mid-November.`,
