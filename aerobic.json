@@ -559,5 +559,126 @@
    "elapsed_min": 30.2,
    "vert_ft": 85
   }
+ ],
+ "sessions": [
+  {
+   "id": "21089403692",
+   "date": "2026-11-22",
+   "sport": "RockClimbing",
+   "name": "Boulder & Top Rope",
+   "minutes": 94.2
+  },
+  {
+   "id": "20914207776",
+   "date": "2026-11-08",
+   "sport": "WeightTraining",
+   "name": "Afternoon Weight Training",
+   "minutes": 39.0
+  },
+  {
+   "id": "20835457878",
+   "date": "2026-11-02",
+   "sport": "RockClimbing",
+   "name": "Boulder",
+   "minutes": 42.6
+  },
+  {
+   "id": "20703539482",
+   "date": "2026-10-22",
+   "sport": "RockClimbing",
+   "name": "Lead & Top Rope",
+   "minutes": 155.9
+  },
+  {
+   "id": "20532480572",
+   "date": "2026-10-10",
+   "sport": "RockClimbing",
+   "name": "Lead",
+   "minutes": 140.3
+  },
+  {
+   "id": "20467179191",
+   "date": "2026-10-05",
+   "sport": "RockClimbing",
+   "name": "Boulder",
+   "minutes": 50.0
+  },
+  {
+   "id": "20425395997",
+   "date": "2026-10-02",
+   "sport": "WeightTraining",
+   "name": "Afternoon Weight Training",
+   "minutes": 27.5
+  },
+  {
+   "id": "20291189267",
+   "date": "2026-09-22",
+   "sport": "RockClimbing",
+   "name": "Lead",
+   "minutes": 82.0
+  },
+  {
+   "id": "20247134760",
+   "date": "2026-09-19",
+   "sport": "WeightTraining",
+   "name": "Afternoon Weight Training",
+   "minutes": 5.7
+  },
+  {
+   "id": "20247140936",
+   "date": "2026-09-19",
+   "sport": "RockClimbing",
+   "name": "Boulder",
+   "minutes": 71.7
+  },
+  {
+   "id": "20164268878",
+   "date": "2026-09-13",
+   "sport": "RockClimbing",
+   "name": "Boulder",
+   "minutes": 63.6
+  },
+  {
+   "id": "18868848975",
+   "date": "2026-06-09",
+   "sport": "Workout",
+   "name": "Night Workout",
+   "minutes": 6.1
+  },
+  {
+   "id": "13285819289",
+   "date": "2025-01-06",
+   "sport": "RockClimbing",
+   "name": "Afternoon Rock Climb",
+   "minutes": 113.0
+  },
+  {
+   "id": "13258712592",
+   "date": "2025-01-03",
+   "sport": "RockClimbing",
+   "name": "Afternoon Rock Climb",
+   "minutes": 74.3
+  },
+  {
+   "id": "13131231179",
+   "date": "2024-12-16",
+   "sport": "HighIntensityIntervalTraining",
+   "name": "Afternoon HIIT",
+   "minutes": 1.2
+  },
+  {
+   "id": "13131231900",
+   "date": "2024-12-16",
+   "sport": "HighIntensityIntervalTraining",
+   "name": "Afternoon HIIT",
+   "minutes": 9.1
+  },
+  {
+   "id": "13131232069",
+   "date": "2024-12-16",
+   "sport": "WeightTraining",
+   "name": "Afternoon Weight Training",
+   "minutes": 13.4
+  }
  ]
 }
