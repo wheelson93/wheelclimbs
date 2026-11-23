@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Wheel Climbs — goals</title>
+<meta name="description" content="Two goals for the year: the Exum Ridge in July and back to 5.12 by late fall.">
+<meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M2 28 12 8l5 9 4-6 9 17z' fill='%23c2562b'/></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Climbs">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>if(navigator.standalone||matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches)document.documentElement.classList.add("app")</script>
+<link rel="stylesheet" href="style.css?v=8">
+</head>
+<body>
+<nav class="nav" aria-label="Sections">
+  <a class="brand" href="./">Wheel<span>Climbs</span></a>
+  <div class="links">
+    <a href="plan.html">This week</a><a href="goals.html" class="on">Goals</a><a href="./">Climbing</a><a href="aerobic.html">Aerobic</a><a href="strength.html">Strength</a>
+  </div>
+  <div class="subnav"><a href="#year">The year</a><a href="#exum">Exum</a><a href="#g512">5.12</a><a href="#how">How it's scored</a></div>
+</nav>
+
+<main class="wrap" id="top">
+  <header class="hero">
+    <p class="eyebrow" id="eyebrow">Two goals · one year</p>
+    <h1>Big days, hard moves</h1>
+    <p class="lede" id="lede">—</p>
+  </header>
+
+  <section class="tiles goal-tiles" id="countdown"></section>
+
+  <section class="card" id="year">
+    <h2>The year</h2>
+    <p class="note">Each block builds on the last: winter strength and base, spring 5.11 volume and vert, an alpine peak for the Exum, then a power block into the 5.12 season.</p>
+    <div id="timeline"></div>
+    <div id="phase-list" class="phase-list"></div>
+  </section>
+
+  <div class="grid">
+    <section class="card" id="exum">
+      <div class="head"><div><h2>Exum Ridge readiness</h2><p class="note" id="exum-note">—</p></div></div>
+      <div id="exum-list"></div>
+    </section>
+    <section class="card" id="g512">
+      <div class="head"><div><h2>5.12 readiness</h2><p class="note" id="g512-note">—</p></div></div>
+      <div id="g512-list"></div>
+    </section>
+  </div>
+
+  <section class="card" id="how">
+    <h2>How it's scored</h2>
+    <ul class="howlist">
+      <li>Each measure has an end target and a checkpoint for today. The checkpoint ramps through the year, so "on track" means you're where the plan expects you to be right now, not that you're already done.</li>
+      <li><b>Exum targets</b> reflect a long alpine day: roughly 7,000 ft from Lupine Meadows to the 13,775 ft summit, 5.7 climbing, and 12+ hours car to car (less per day if you camp at the Lower Saddle).</li>
+      <li><b>5.12 targets</b> follow the path that worked before: lots of 5.11 redpoints, stronger fingers, then a project.</li>
+      <li>Data: Strava (hikes, runs, strength logs) and Mountain Project ticks. Long days and vert count hikes, runs, ski tours and other mountain days.</li>
+    </ul>
+  </section>
+
+  <footer class="foot">Updated nightly from Strava and Mountain Project. Edit the dates in phases.js.</footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="phases.js"></script>
+<script src="goals.js"></script>
+<nav class="tabbar" aria-label="Pages"><a href="plan.html"><span class="ti" aria-hidden="true">🗓️</span><span>This week</span></a><a href="goals.html" aria-current="page"><span class="ti" aria-hidden="true">🏔️</span><span>Goals</span></a><a href="./"><span class="ti" aria-hidden="true">🧗</span><span>Climbing</span></a><a href="aerobic.html"><span class="ti" aria-hidden="true">🫀</span><span>Aerobic</span></a><a href="strength.html"><span class="ti" aria-hidden="true">💪</span><span>Strength</span></a></nav>
+<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>

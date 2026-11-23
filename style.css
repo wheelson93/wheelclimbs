@@ -147,7 +147,7 @@ td.dt{white-space:nowrap;color:var(--muted)}
 .k{width:10px;height:10px;border-radius:3px;flex:none;background:var(--c4)}
 .k-aerobic{background:var(--c2)}.k-climb{background:var(--c0)}.k-strength{background:var(--c1)}.k-drift{background:var(--c3)}
 .why{margin:8px 0 0;padding-left:1.1rem;display:flex;flex-direction:column;gap:8px;font-size:15px}
-.phases-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+.phases-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px;margin-top:6px}
 .ph{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}
 .ph.on{border-color:var(--c0);background:color-mix(in srgb,var(--c0) 10%,var(--bg))}
 .ph .pn{font-size:14px;font-weight:600}
@@ -201,3 +201,11 @@ html.app .tabbar a[aria-current=page] .ti{filter:none;opacity:1}
 .howlist{margin:0;padding-left:1.1rem;font-size:14px;display:flex;flex-direction:column;gap:6px}
 .howlist code{font-size:12.5px;background:var(--track);padding:1px 5px;border-radius:5px}
 html.app .tabbar a{font-size:10.5px}
+/* Goals page */
+.track .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg);opacity:.55;border-radius:1px;transform:translateX(-1px)}
+.phase-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px;margin-top:14px}
+.pl-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;background:var(--bg)}
+.pl-item.on{border-color:var(--c0);box-shadow:inset 3px 0 0 var(--c0)}
+.pl-when{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--c0);font-weight:600;margin-bottom:2px}
+.pl-focus{color:var(--muted);font-size:13px;margin-top:3px}
+#timeline svg{display:block}
