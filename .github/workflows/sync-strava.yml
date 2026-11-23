@@ -1,0 +1,27 @@
+name: Sync aerobic data from Strava
+on:
+  schedule:
+    - cron: "27 10 * * *"   # nightly, ~3–4am Denver
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pull Strava activities
+        env:
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+        run: |
+          if [ -z "$STRAVA_REFRESH_TOKEN" ]; then echo "Strava secrets not set yet; skipping."; exit 0; fi
+          python3 sync_strava.py
+      - name: Commit if changed
+        run: |
+          if git diff --quiet aerobic.json; then echo "No changes"; exit 0; fi
+          git config user.name "wheelclimbs-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Sync aerobic data from Strava"
+          git pull --rebase && git push
