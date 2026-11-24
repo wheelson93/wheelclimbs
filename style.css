@@ -176,9 +176,10 @@ html.app .subnav{border-top:0;padding-top:0}
 html.app body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
 html.app .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:20;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
 html.app .tabbar a{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;text-decoration:none;font:500 11px/1.2 var(--sans);color:var(--muted)}
-html.app .tabbar a .ti{font-size:20px;line-height:1;filter:grayscale(1);opacity:.7}
+html.app .tabbar a .ti{display:block;width:22px;height:22px;line-height:0;opacity:.75}
+html.app .tabbar a .ti svg{width:100%;height:100%}
 html.app .tabbar a[aria-current=page]{color:var(--c0);background:color-mix(in srgb,var(--c0) 14%,transparent)}
-html.app .tabbar a[aria-current=page] .ti{filter:none;opacity:1}
+html.app .tabbar a[aria-current=page] .ti{opacity:1}
 /* Strength page */
 .bm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:6px 28px;margin-top:6px}
 .bm-group h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 8px;font-weight:600}

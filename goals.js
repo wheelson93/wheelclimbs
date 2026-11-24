@@ -56,7 +56,7 @@
       svg.append('text').attr('x', Math.min(Math.max(xx, 30), W - 30)).attr('y', y).attr('text-anchor', 'middle').style('font-size', '11.5px').style('font-weight', 600).style('fill', color).text(label);
     };
     mark(tISO, 'Today', css('--fg'), 12);
-    mark(G.exum.date, '⛰ Exum', css('--c0'), 12);
+    mark(G.exum.date, '▲ Exum', css('--c0'), 12);
     mark(G.g512.date, '5.12', css('--c0'), 12);
   })();
   $('#type-legend').replaceChildren(...[['prep', '--c4'], ['base', '--c1'], ['build', '--c2'], ['taper', '--c3'], ['peak', '--c0']].map(([t, c]) => { const sp = el('span'); const sw = el('i', 'sw'); sw.style.background = `var(${c})`; sp.append(sw, document.createTextNode(WC.TYPE_LABEL[t])); return sp; }));
