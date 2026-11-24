@@ -209,3 +209,124 @@ html.app .tabbar a{font-size:10.5px}
 .pl-when{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--c0);font-weight:600;margin-bottom:2px}
 .pl-focus{color:var(--muted);font-size:13px;margin-top:3px}
 #timeline svg{display:block}
+
+/* =====================================================================
+   TORCH BOARD theme layer (Nov 2026). Overrides everything above.
+   Dark ink-violet ground, corner glows, Inter Tight, uppercase 900
+   headlines, pink→orange gradient, color-barred rows, big colored numbers.
+   Series: --c0 pink (climbing/onsight) · --c1 cyan (strength/trad)
+           --c2 lime (aerobic/redpoint) · --c3 orange (tests/fell) · --c4 dim
+   ===================================================================== */
+:root{
+  --bg:#100e1b; --panel:#17152a; --inner:#141225; --row:#1c1a30; --row-2:#211f37; --line:#2b2a3b;
+  --fg:#ffffff; --text:#d8d7e4; --muted:#9a99ad; --dim:#616174;
+  --grid:#25233a; --track:#29273f;
+  --c0:#ff3974; --c1:#1ae3ff; --c2:#d9ff43; --c3:#ff9e3a; --c4:#616174; --ok:#d9ff43;
+  --hot:#ff9e3a; --grad:linear-gradient(90deg,var(--c0),var(--hot));
+  --glow-a:rgba(255,57,116,.22); --glow-b:rgba(26,227,255,.13);
+  --f:"Inter Tight",Inter,system-ui,-apple-system,sans-serif;
+  --sans:var(--f); --serif:var(--f);
+  color-scheme:dark;
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+body{background:var(--bg);color:var(--text);font:16px/1.5 var(--f);-webkit-font-smoothing:antialiased;overflow-x:clip}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(60% 45% at 100% 0,var(--glow-a),transparent 70%),
+             radial-gradient(55% 45% at 0 100%,var(--glow-b),transparent 70%),var(--bg)}
+b,strong{color:var(--fg);font-weight:700}
+:focus-visible{outline:2px solid var(--hot);outline-offset:2px}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* nav + tab bar */
+.nav{background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom-color:var(--line)}
+.brand{font:900 19px/1 var(--f);text-transform:uppercase;letter-spacing:-.02em;color:var(--fg)}
+.brand span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-left:2px}
+.links a,.subnav a{font-weight:700;color:var(--muted)}
+.links a:hover,.subnav a:hover{background:var(--row);color:var(--fg)}
+.links a.on{background:var(--grad);color:var(--bg)}
+html.app .tabbar{background:color-mix(in srgb,var(--bg) 92%,transparent)}
+html.app .tabbar a{font-weight:700}
+html.app .tabbar a[aria-current=page]{color:var(--c0);background:color-mix(in srgb,var(--c0) 16%,transparent)}
+
+/* masthead */
+.hero{padding:clamp(12px,3vw,32px) 4px 4px}
+.eyebrow{display:flex;align-items:center;gap:12px;color:var(--hot);font-weight:700;font-size:14px;letter-spacing:.06em}
+.eyebrow::before{content:"";width:28px;height:3px;border-radius:2px;background:var(--hot);flex:none}
+h1{font:900 clamp(44px,8.5vw,96px)/.92 var(--f);letter-spacing:-.035em;text-transform:uppercase;color:var(--fg);margin:14px 0 4px}
+h1 .grad{display:block}
+.lede{color:var(--text);font-size:clamp(17px,2vw,20px);max-width:42em;margin-top:14px}
+.lede b{color:var(--fg);font-weight:700}
+h2{font:900 clamp(24px,3.4vw,34px)/1 var(--f);letter-spacing:-.03em;text-transform:uppercase;color:var(--fg);margin:0 0 6px}
+.note{color:var(--muted);font-size:14px}
+.note b{color:var(--fg);font-weight:700}
+
+/* board panels: gradient border */
+.card{border:2px solid transparent;border-radius:18px;padding:clamp(14px,2.4vw,22px);box-shadow:0 30px 60px rgba(0,0,0,.35);
+  background:linear-gradient(var(--inner),var(--inner)) padding-box,
+    linear-gradient(160deg,color-mix(in srgb,var(--c0) 55%,transparent),rgba(51,44,69,.6) 35%,rgba(51,44,69,.6) 65%,color-mix(in srgb,var(--c1) 35%,transparent)) border-box}
+
+/* big-number tiles with color edge */
+.tile{background:var(--row);border:0;border-left:6px solid var(--tc,var(--c0));border-radius:12px;padding:14px 16px}
+.tiles .tile:nth-child(4n+1){--tc:var(--c0)}.tiles .tile:nth-child(4n+2){--tc:var(--c2)}
+.tiles .tile:nth-child(4n+3){--tc:var(--c1)}.tiles .tile:nth-child(4n+4){--tc:var(--c3)}
+.lab{color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.num{font:900 clamp(32px,4.4vw,46px)/1 var(--f);letter-spacing:-.03em;color:var(--tc,var(--fg));margin-top:6px}
+.num.ok{color:var(--ok)}
+.sub{color:var(--muted)}
+
+/* controls */
+.seg{border-color:var(--line);background:var(--row)}
+.seg button{font-weight:700;color:var(--muted);min-height:36px;padding:6px 14px}
+.seg button[aria-pressed=true]{background:var(--grad);color:var(--bg)}
+.chip,.pick,.tools input{background:var(--row);border-color:var(--line);color:var(--fg);font-weight:600}
+.tools input{min-height:44px}
+.tools input:focus,.pick:focus{border-color:var(--hot);outline:none}
+.how summary{color:var(--hot);font-weight:800}
+
+/* week plan as results rows: color bar per session kind */
+.pl-row{background:var(--row);border:0;border-radius:10px;padding:12px 12px 12px 0;margin-bottom:6px;
+  grid-template-columns:6px 3.4rem minmax(0,1fr) auto;column-gap:12px;animation:rin .35s ease-out both}
+.pl-row:nth-child(even){background:var(--row-2)}
+.pl-row::before{content:"";align-self:stretch;margin:-12px 0;border-radius:10px 0 0 10px;background:var(--rc,var(--dim))}
+.pl-row:has(.k-climb){--rc:var(--c0)}.pl-row:has(.k-strength){--rc:var(--c1)}
+.pl-row:has(.k-aerobic){--rc:var(--c2)}.pl-row:has(.k-drift){--rc:var(--c3)}
+.pl-row.today{margin:0 0 6px;padding:12px 12px 12px 0;background:var(--row-2);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--hot) 70%,transparent)}
+.pl-row.is-rest{--rc:var(--dim)}
+.pl-day .dn{color:var(--muted);font-weight:800}
+.pl-day .dd{font:900 30px/1 var(--f);letter-spacing:-.03em;color:var(--fg)}
+.pl-title{color:var(--fg);font-weight:800;font-size:17px}
+.pl-detail{color:var(--text);font-size:14.5px}
+.pl-log{color:var(--ok);font-weight:700}
+.k{background:var(--rc,var(--c4))}
+@keyframes rin{from{opacity:0;transform:translateY(6px)}}
+@media (max-width:560px){.pl-row{grid-template-columns:6px 2.8rem minmax(0,1fr)}.pl-row>:last-child:not(.pl-day){grid-column:3}}
+
+/* badges */
+.badge{border-radius:4px;font-weight:800;letter-spacing:.06em;background:color-mix(in srgb,var(--dim) 30%,transparent);color:var(--text)}
+.badge.ok{background:color-mix(in srgb,var(--ok) 20%,transparent);color:var(--ok)}
+.badge.due{background:color-mix(in srgb,var(--c0) 22%,transparent);color:var(--c0)}
+
+/* season strip + phase list */
+.ph,.pl-item,.plan li,.retest,.thr .t,.logex{background:var(--row);border-color:var(--line)}
+.ph.on,.pl-item.on{border-color:var(--c0);background:color-mix(in srgb,var(--c0) 12%,var(--row));box-shadow:inset 4px 0 0 var(--c0)}
+.ph .pn{color:var(--fg);font-weight:800}
+.pl-when,.plan .when{color:var(--hot);font-weight:800}
+.thr .v{font:900 40px/1 var(--f);letter-spacing:-.03em;color:var(--c2)}
+
+/* lists and tables */
+.ld-row,.td-row,.ss-row{border-bottom-color:var(--line)}
+.td-grade,.ld-row .n{color:var(--fg);font-weight:800}
+.ss-chip{background:var(--row-2);color:var(--text)}
+th{background:var(--inner)}
+th button{color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+td{border-bottom-color:var(--line)}
+tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--row) 60%,transparent)}
+td a{color:var(--fg);font-weight:700}
+.bm-group h3{color:var(--hot);font-weight:800}
+.howlist code{background:var(--row-2);color:var(--fg)}
+
+/* charts */
+svg text{fill:var(--muted);font-family:var(--f);font-weight:600}
+.tip{background:var(--panel);border-color:var(--line);color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.track .tick{background:var(--fg)}
+.foot{color:var(--muted)}

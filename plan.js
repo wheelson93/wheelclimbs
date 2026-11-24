@@ -305,7 +305,7 @@
 
   // ---------- header + tiles ----------
   $('#phase-eyebrow').textContent = `${phase.name} · week ${WK.weekNo} of ${WK.weeks}${deload ? ' · deload' : ''}${testWeek ? ' · test week' : ''}`;
-  $('#week-title').textContent = `Week of ${d3.timeFormat('%b %-d')(monday)}`;
+  $('#week-title').innerHTML = `Week of <span class="grad">${d3.timeFormat('%b %-d')(monday)}</span>`;
   $('#focus').textContent = phase.focus;
   const tile = (l, v, s, ok) => { const t = el('div', 'tile'); t.append(el('div', 'lab', l), el('div', 'num' + (ok ? ' ok' : ''), v), el('div', 'sub', s)); return t; };
   $('#targets').replaceChildren(
