@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-23",
+ "updated": "2026-11-24",
  "source": "Strava API (nightly sync)",
  "thresholds": {
   "aet": 122,
@@ -34,6 +34,23 @@
   }
  ],
  "activities": [
+  {
+   "id": "21102932723",
+   "date": "2026-11-23",
+   "name": "Night Walk",
+   "sport": "Walk",
+   "mi": 1.002,
+   "moving_min": 20.4,
+   "elapsed_min": 20.4,
+   "vert_ft": 125,
+   "avg_hr": 78,
+   "zones_min": [
+    20.4,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
   {
    "id": "21076774603",
    "date": "2026-11-21",
