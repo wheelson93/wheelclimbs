@@ -60,14 +60,14 @@
   const lt = tests[0];
   const box = $('#driftlast');
   if (lt) {
-    const pass = lt.pa_hr_drift_pct < 5;
+    const pass = lt.pa_hr_drift_pct <= 5;
     const h = el('div', 'lab'); h.textContent = `Latest: ${fmtDate(new Date(lt.date + 'T12:00:00'))} · ${lt.name}`;
-    h.append(el('span', 'badge' + (pass ? ' ok' : ' due'), pass ? 'under 5%' : 'over 5%'));
+    h.append(el('span', 'badge' + (pass ? ' ok' : ' due'), lt.pa_hr_drift_pct > 5 ? 'over 5%' : lt.pa_hr_drift_pct >= 3.5 ? 'at AeT' : 'under 3.5%'));
     const dl = el('dl', 'dl');
     [['Steady segment', `${lt.steady_min} min`], ['HR first → second half', `${lt.hr1} → ${lt.hr2} bpm`], ['Pace:HR drift', `${lt.pa_hr_drift_pct}%`]].forEach(([k, v]) => dl.append(el('dt', null, k), el('dd', null, v)));
     box.append(h, dl, el('p', 'note', lt.verdict));
   } else box.append(el('p', 'empty', 'No drift test yet.'));
-  const RETEST_WEEKS = 6;
+  const T_ = D.thresholds || {}; const RETEST_WEEKS = T_.ant && T_.aet && (T_.ant - T_.aet) / T_.ant > 0.10 ? 4 : 6;
   const due = lt ? new Date(new Date(lt.date + 'T12:00:00').getTime() + RETEST_WEEKS * 7 * DAY) : today;
   const overdue = due <= today;
   const informal = !lt || lt.protocol !== 'test';

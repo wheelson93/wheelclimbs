@@ -120,17 +120,20 @@ def main():
                 a["hr_note"] = "HR looked like a sensor dropout; excluded from zone totals"
             if is_drift and hr:
                 d = drift(st)
-                if d:
-                    ok = d["pa_hr_drift_pct"] < 5
-                    tests[aid] = {"id": aid, "date": a["date"], "name": name, "sport": sport, "protocol": "test", **d,
-                                  "verdict": (f"Passed: {d['pa_hr_drift_pct']}% drift at ~{d['start_hr']} bpm, so AeT is at least {d['start_hr']}. Next time try 3–5 bpm higher."
-                                              if ok else f"Over 5%: {d['pa_hr_drift_pct']}% drift at ~{d['start_hr']} bpm, so AeT is below that. Retest ~5 bpm lower.")}
+                if d and d["steady_min"] < 40:
+                    print(f"::notice::Drift test {aid} only had {d['steady_min']} steady min (need 40+); not scored")
+                elif d:
+                    p_ = d["pa_hr_drift_pct"]
+                    verdict = (f"Over 5%: {p_}% drift at ~{d['start_hr']} bpm, so AeT is below that. Retest ~5 bpm lower." if p_ > 5
+                               else f"Found it: {p_}% drift at ~{d['start_hr']} bpm puts your AeT right there." if p_ >= 3.5
+                               else f"Under 3.5%: {p_}% drift at ~{d['start_hr']} bpm, so AeT is higher than that. Retest ~5 bpm higher.")
+                    tests[aid] = {"id": aid, "date": a["date"], "name": name, "sport": sport, "protocol": "test", **d, "verdict": verdict}
             if is_ant and hr:
                 t = st["time"]
-                last20 = [h for h, tt in zip(hr, t) if tt >= t[-1] - 1200]
-                lthr = round(statistics.mean(last20))
+                test30 = [h for h, tt in zip(hr, t) if tt >= t[-1] - 1800]  # the 30-min effort (recording stops at its end)
+                lthr = round(statistics.mean(test30))
                 T.update(ant=lthr, ant_range=[lthr - 2, lthr + 2], ant_measured=True,
-                         ant_basis=f"Measured: average HR over the last 20 min of the {a['date']} threshold test.")
+                         ant_basis=f"Measured: average HR over the 30-min effort of the {a['date']} threshold test.")
             time.sleep(1)
         if aid not in known:
             new += 1
@@ -140,9 +143,12 @@ def main():
     proper = sorted((d for d in tests.values() if d.get("protocol") == "test"), key=lambda d: d["date"])
     if proper:
         d = proper[-1]
-        if d["pa_hr_drift_pct"] < 5:
-            T.update(aet=d["start_hr"], aet_range=[d["start_hr"], d["start_hr"] + 5], aet_measured=True,
-                     aet_basis=f"Measured: {d['date']} drift test held {d['pa_hr_drift_pct']}% drift at {d['start_hr']} bpm.")
+        if 3.5 <= d["pa_hr_drift_pct"] <= 5:
+            T.update(aet=d["start_hr"], aet_range=[d["start_hr"] - 2, d["start_hr"] + 2], aet_measured=True,
+                     aet_basis=f"Measured: {d['date']} drift test drifted {d['pa_hr_drift_pct']}% at {d['start_hr']} bpm, right at AeT.")
+        elif d["pa_hr_drift_pct"] < 3.5:
+            T.update(aet=d["start_hr"], aet_range=[d["start_hr"], d["start_hr"] + 6], aet_measured=True,
+                     aet_basis=f"{d['date']} drift test held {d['pa_hr_drift_pct']}% at {d['start_hr']} bpm, so AeT is at least that; retest ~5 bpm higher.")
         else:
             est = d["start_hr"] - 5
             T.update(aet=est, aet_range=[est - 3, d["start_hr"] - 1], aet_measured=False,
