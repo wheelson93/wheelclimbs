@@ -232,6 +232,38 @@
       }).on('pointerleave', () => (tip.style.display = 'none'));
   })();
 
+  // ---------- weekly effort (session RPE × minutes) ----------
+  (async function effort() {
+    const box = $('#eff-chart'); const tip = box.querySelector('.tip');
+    let A = null;
+    try { A = await (await fetch('aerobic.json', { cache: 'no-cache' })).json(); } catch { A = null; }
+    const items = A ? [...(A.activities || []).map((a) => ({ date: a.date, min: a.moving_min || 0, rpe: a.rpe })), ...(A.sessions || []).map((s) => ({ date: s.date, min: s.minutes || 0, rpe: s.rpe }))] : [];
+    const W = box.clientWidth || 420, H = 200, m = { t: 22, r: 6, b: 22, l: 40 };
+    const end = d3.timeMonday.ceil(today), start = d3.timeMonday.offset(end, -12);
+    const weeks = d3.timeMonday.range(start, end);
+    const inWeek = (w) => items.filter((a) => d3.timeMonday(dt(a.date)).getTime() === w.getTime());
+    const rows = weeks.map((w) => { const xs = inWeek(w); const rated = xs.filter((a) => a.rpe); return { w, load: Math.round(d3.sum(rated, (a) => a.rpe * a.min)), rated: rated.length, all: xs.length }; });
+    rows.forEach((r, i) => { const prev = rows.slice(Math.max(0, i - 4), i).filter((p) => p.rated); const avg = prev.length >= 3 ? d3.mean(prev, (p) => p.load) : 0; r.avg = avg; r.flag = avg > 0 && r.load > 1.3 * avg; });
+    const ratedTotal = d3.sum(rows, (r) => r.rated), allTotal = d3.sum(rows, (r) => r.all);
+    if (!ratedTotal) { box.append(el('div', 'empty', 'No effort ratings yet. Add a line like "rpe 7" to your Strava activities and this fills in after the nightly sync.')); $('#eff-note').textContent = ''; return; }
+    const x = d3.scaleBand(weeks, [m.l, W - m.r]).padding(0.25);
+    const y = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.load) || 100]).nice().range([H - m.b, m.t]);
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickSize(-(W - m.l - m.r))).call((g) => g.select('.domain').remove()).call((g) => g.selectAll('line').attr('stroke', css('--line')));
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues(weeks.filter((_, i) => i % 3 === 0)).tickFormat(d3.timeFormat('%b %-d')).tickSize(0)).call((g) => g.select('.domain').remove());
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.w)).attr('width', x.bandwidth()).attr('y', (r) => y(r.load)).attr('height', (r) => Math.max(0, y(0) - y(r.load))).attr('rx', 2)
+      .style('fill', (r) => (r.flag ? css('--c0') : css('--c1')));
+    svg.append('g').selectAll('text').data(rows.filter((r) => r.flag)).join('text').attr('x', (r) => x(r.w) + x.bandwidth() / 2).attr('y', (r) => y(r.load) - 5)
+      .attr('text-anchor', 'middle').style('font-size', '11px').style('font-weight', 700).style('fill', css('--c0')).text('▲');
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.w) - 2).attr('width', x.bandwidth() + 4).attr('y', m.t).attr('height', H - m.t - m.b).attr('fill', 'transparent')
+      .on('pointerenter pointermove', (ev, r) => {
+        tip.replaceChildren(el('div', 't', `Week of ${d3.timeFormat('%b %-d')(r.w)}`), el('div', 'ln', `Effort load ${r.load.toLocaleString()}`), el('div', 'ln', `${r.rated} of ${r.all} sessions rated`),
+          ...(r.avg ? [el('div', 'ln', `4-week average before: ${Math.round(r.avg).toLocaleString()}${r.flag ? ' · big jump' : ''}`)] : []));
+        tip.style.display = 'block'; const [px] = d3.pointer(ev, box); tip.style.left = Math.min(px + 12, box.clientWidth - 180) + 'px'; tip.style.top = '8px';
+      }).on('pointerleave', () => (tip.style.display = 'none'));
+    $('#eff-note').textContent = `${ratedTotal} of ${allTotal} sessions in the last 12 weeks have an effort rating. Unrated sessions aren't counted, so rate them all for a fair comparison.`;
+  })();
+
   // ---------- exercise history ----------
   const pick = $('#hist-pick');
   const keys = [...by.keys()].filter((k) => !MOB.some((m) => m.key === k) && !TESTS.some((t) => t.key === k)).sort((a, b) => by.get(b).length - by.get(a).length);

@@ -85,12 +85,10 @@
   }
   const boxTest = ` Test week: start with the box step test before anything else: 1,000 steps on a 12-inch box (1,000 ft), in boots, with a ${lb5(BWlb * 0.2)} lb pack (20% of bodyweight), as fast as you can sustain. Log it as "box step test 1000ft 38:20".`;
   if (testWeek && !testDue) MID = { kind: 'aerobic', title: 'AnT test', detail: `Threshold time trial, rested: 15 min easy warm-up, then 30 min solo as hard as you can hold evenly, uphill or on a treadmill at 6–8%. Stop the recording the moment the 30 min ends and name it "AnT test" in Strava; the site takes your average HR over the last 20 min as your anaerobic threshold (now ${T.ant}${T.ant_measured ? '' : ', estimated'}).`, min: 60 };
-  // Flexibility (names match the training app). Rest days rotate hips / hamstrings / ankles by week; deload, taper and peak weeks just maintain.
+  // Flexibility (names match the training app). Same two targets all block, twice a week, so they can be measured and progressed; deload, taper and peak weeks just maintain.
   const flexEasy = deload || ['taper', 'peak'].includes(phase.type);
   const FLEX = flexEasy ? 'Flexibility Maintenance (12 min: kicks, pancake, frog, pigeon, couch, calf, pec and lat stretches, short holds)'
-    : [`${WK.weekNo % 2 ? 'Hip Adductors (butterfly, side split ISO, frog, half side split, 60 s × 2 each)' : 'Side Split – L1 (horse stance ISO 30 s × 3, standing pancake 30 s × 3)'}`,
-       `${WK.weekNo % 2 ? 'Glutes and Hamstrings (couch stretch, standing pancake, pigeon, side split ISO, 60 s × 2 each)' : 'Front Split – L1 (single-leg good mornings 10 × 3, long lunge ISO 30 s × 3)'}`,
-       'Ankle Flexibility (calf stretch, donkey calf raise, fisherman\'s stretch, 60 s × 3 each, very easy)'][WK.weekNo % 3];
+    : 'on two rest days this week, the same pair all block: Side Split – L1 (horse stance ISO 30 s × 3, standing pancake 30 s × 3) and Glutes and Hamstrings (couch stretch, standing pancake, pigeon, 60 s × 2 each). On the first one of each block, log "side split ___cm" and "pancake ___cm" in Strava so the Strength tab tracks them. Ankle Flexibility only if your ankles feel stiff';
   const REST = (t, det) => ({ kind: 'rest', title: t || 'Rest', detail: det || `Off, or an easy walk. Flexibility: ${FLEX}. If fingers feel good, the Abrahangs protocol: 10 min of 10 s hangs across grips at very easy effort, feet on the ground. Any morning with 10 min: Morning Mobility or Pulses and Kicks.` });
   // Strength: pick the two areas trained least recently (from strength.json), so the benchmarks move evenly.
   const fingersOnWall = ['prep1', 'base1', 'base2', 'base3', 'build2'].includes(phase.key);
@@ -130,8 +128,8 @@
   const lastDone = {};
   ((ST && ST.sessions) || []).forEach((x) => (x.entries || []).forEach((e) => { if (AREAS[e.cat] && (!lastDone[e.cat] || x.date > lastDone[e.cat])) lastDone[e.cat] = x.date; }));
   const focus = Object.keys(AREAS).sort((a, b) => (lastDone[a] || '0').localeCompare(lastDone[b] || '0')).slice(0, 2);
-  const KB = { kind: 'strength', title: `Strength · ${focus.map((k) => AREAS[k][0]).join(' + ')}${deload ? ' · deload' : ''}`,
-    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : 'About 55 min. General Warm Up first (leg swings, split squats, horse stance, scap press ups, band face pulls). '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Finish with ${forearmTxt} for the forearms.${legMaint}${testWeek ? boxTest : ''} Aim for about an hour. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
+  const KB = { kind: 'strength', title: `Strength · ${focus.map((k) => AREAS[k][0]).join(' + ')}${deload ? ' · deload' : buildPhase ? ' · maintenance' : ''}`,
+    detail: `${deload ? 'Deload: 2 sets of each instead of 3–4, nothing to failure. ' : buildPhase ? 'Build phase, so this is maintenance: 2 sets of each instead of 4, about 35 min, nothing to failure; climbing gets the energy now. General Warm Up first (leg swings, split squats, horse stance, scap press ups, band face pulls). ' : 'About 55 min. General Warm Up first (leg swings, split squats, horse stance, scap press ups, band face pulls). '}${focus.map((k) => AREAS[k][1].replace(/^./, (c) => c.toUpperCase())).join(". ")}. Finish with ${forearmTxt} for the forearms.${legMaint}${testWeek ? boxTest : ''} Aim for about an hour. Put each exercise on its own line in the Strava description so it counts toward the benchmarks.` };
   // Climbing sessions per phase, named after the Lattice session library. Arrays are [c1, out] or [c1, c2, out].
   // Fingerboard work goes first in a session (before climbing); weights live on the separate strength day.
   const C = (title, detail) => ({ kind: 'climb', title, detail });
@@ -154,6 +152,9 @@
     arcM: 'ARC Medium: 20 min of continuous very easy climbing, no pump',
     arcL: 'ARC Long: 30 min of continuous very easy climbing, no pump',
     fiveThree: '5 On 3 Off: 3 × 5 min very easy climbing, 3 min rest',
+    oneOne: '1 On 1 Off: 10 × 1 min at easy to moderate effort, 1 min rest, ideally on a circuit board',
+    eightFive: '8 On 5 Off: 3 × 8 min of very easy route climbing (up-down-up or lap the same route), 5 min rest',
+    tenTen: '10 On 10 Off: 3 × 10 min of very easy route climbing, 10 min rest',
     oneTwo: '1 On 2 Off: 10 × 1 min at moderate effort, 2 min rest',
     acMileage: 'AC Boulder Mileage: 20 very easy boulders, about one a minute, smooth and rhythmic',
   };
@@ -176,10 +177,11 @@
     prep1: [C('Hangboard + boulder mileage', `${FB} Then ${SP.mileage[1].replace('up to 60 min (20 problems)', '40–60 min')} Nothing near max in prep.`),
             C('Route mileage', `${AB.arcL} to start, then 5.9–5.10c leads outside or in the gym with a few practice falls. Stop with energy to spare.`)],
     base1: [HB(spBase1),
-            C(blk === 1 ? 'Long boulders' : 'Extended boulders', `${AB.arcS} to warm up. Then ${blk === 1 ? PE.long : PE.ext} Pump yes, failing every lap no. If you are still under 90 min, finish with ${AB.oneTwo}.`),
+            blk === 3 ? C('Extended boulders', `${AB.arcS} to warm up. Then ${PE.ext} Pump yes, failing every lap no. If you are still under 90 min, finish with ${AB.oneTwo}.`)
+              : C('Endurance intervals', `${AB.arcS} to warm up. Then ${blk === 1 ? AB.oneTwo : AB.oneOne}. Every interval should go: a pump you can manage, nowhere near failure. ${blk === 1 ? 'If all 10 felt in control, add 2 more next week.' : 'Same idea as last block with half the rest; if a set slips, take one easier route and keep going.'} Finish with ${AB.arcM} if you have time.`),
             C('Sunny-day redpoint', `Clear Creek or the Golden Cliffs: a 5.11a/b redpoint. If it's cold or snowy, gym instead: ${PE.pyramid}`)],
     base2: [HB(SP.flash),
-            C('Outdoor 5.11 redpoints', `Clear Creek 5.11a–c. Two routes worked, one sent is a good day. Bad weather, gym instead: ${WK.weekNo % 2 ? PE.broken : PE.doubles}`)],
+            C('Outdoor 5.11 redpoints', `Clear Creek 5.11a–c. Two routes worked, one sent is a good day. Bad weather, gym instead: ${WK.weekNo % 2 ? (blk === 1 ? AB.eightFive : AB.tenTen) + ' (route endurance: finish every set)' : PE.doubles}`)],
     build1: [C('Gym routes · hold 5.11', `${FB} Then ${PE.doubles} Keeps sport fitness while the mountain days take over.`),
              C('Trad multipitch', 'Eldo, Lumpy Ridge or Boulder Canyon 5.6–5.8 multipitch. Move fast: quick transitions, simul-climb easy ground, approach shoes on easy pitches. Treat it as Exum practice.')],
     taper1: [C('Easy gym session', `${AB.arcM}, then a few quality moves on 5.9–5.10. Nothing that leaves you sore.`),
@@ -203,7 +205,7 @@
   // Test week: the first hard session becomes the full test session (fresh day, no other hard climbing that day).
   if (testWeek) climb[0] = C('Test session', 'Fresh day, long warm-up with recruitment hangs. 1) Half crimp max hang (app: Half 4 – Hang – Max Test): 7 s on 20 mm, adding weight each go, up to 8 goes with 3 min rest; note the most you held. 2) Front-three open, same protocol, 4–6 goes. 3) 2-rep-max pull-up: up to 8 sets of 2, 3 min rest. 4) 60% repeaters: 60% of your two-arm half-crimp max (bodyweight plus added load), 7 s on / 3 s off until you can\'t hold; count reps (each rep is 10 s, so reps = total time ÷ 10). 5) Side split, once warm. Log each on its own line in Strava: "max hang test half 20mm +45lb", "max hang test f3 20mm +25lb", "2RM pull-up +50lb", "repeater test 24 reps", "side split 150cm".');
   // Deload week: roughly half volume, nothing to failure.
-  climb.forEach((c) => (c.hard = c.title === 'Exum Ridge' || !/ARC|Open climbing|Fun climbing|Easy gym/.test(c.title)));
+  climb.forEach((c) => (c.hard = c.title === 'Exum Ridge' || !/ARC|Open climbing|Fun climbing|Easy gym|Endurance intervals/.test(c.title)));
   // Warm-ups (training app Open workouts): hangboard days get FS Warm Up – Hang; other hard gym days get calisthenics + a climbing ramp.
   const CAL = (ramp) => (Math.ceil(WK.weekNo / 2) % 2 ? '10-Minute Calisthenics' : 'Warm Up – Bodyweight (leg swings, frog, split squats, scap press ups, shoulder dislocations)') + (ramp ? ', then Warm Up – Climbing Ramp (15–20 min, easy to moderate). ' : '. ');
   const FSW = 'FS Warm Up – Hang first (leg swings, split squats, horse stance, scap press ups, band face pulls, then 4 easy 10 s half-crimp hangs). ';
@@ -227,6 +229,8 @@
   if (['base2', 'build1'].includes(phase.key)) sessionsWanted.sort((a, b) => (b[0] === 'long') - (a[0] === 'long'));
   if (['taper', 'peak'].includes(phase.type)) sessionsWanted = sessionsWanted.filter(([k]) => k !== 'kb' && (phase.type !== 'peak' || k !== 'long'));
   if (phase.type === 'recover') sessionsWanted = sessionsWanted.filter(([k]) => k !== 'test');
+  // Build phases: strength circuit only every other week (maintenance), so the climbing stays fresh.
+  if (buildPhase && WK.weekNo % 2 === 1 && !testWeek) sessionsWanted = sessionsWanted.filter(([k]) => k !== 'kb');
   // how well each session fits each kind of day (0 = not allowed)
   const FIT = {
     out:  { open: 10, afternoon: 4 },
@@ -356,6 +360,10 @@
   }
   if (['base2', 'build1'].includes(phase.key)) why.push('Exum phase: the long day gets first pick of open days. If it is the only open day, make it a long approach with an easy climb at the end. Legs are out of the strength rotation; the carries and hill climbs train them.');
   if (testWeek) why.unshift('Test week: one session is the full test (half-crimp and front-three max hangs, 2-rep-max pull-up, 60% repeaters, side split), the midweek run is a 30-min AnT time trial, and strength day opens with the box step test. Do it on a rested day; the results set your hangboard loads for the next block and show up on the Strength tab.');
+  if (phase.key === 'base1' && blk < 3) why.push('Route endurance first: until the last block of Base 1, the second gym day is endurance intervals you finish every set of, not power endurance. For route goals the base is built with lots of sub-failure volume; extended boulders come back in March.');
+  if (buildPhase) why.push(`Build phase: the strength circuit drops to maintenance, every other week at 2 sets${WK.weekNo % 2 === 1 ? ' (none this week)' : ''}, so the energy goes into goal-specific climbing.`);
+  why.push('Log effort: add a line like "rpe 7" to each Strava activity soon after you finish (1 = very easy, 10 = everything you had), or use Strava\'s own effort slider. The Strength tab charts weekly effort × minutes and flags sudden jumps.');
+  why.push('Changing the plan: a niggle, missed sessions or real exhaustion means adjust now (drop or swap the hard session). Feeling under- or over-trained means give it 2–3 weeks before changing anything; one bad session isn\'t a reason to rewrite the plan.');
   if (readinessNote) why.unshift(readinessNote);
   $('#why-list').replaceChildren(...why.map((t) => el('li', null, t)));
 

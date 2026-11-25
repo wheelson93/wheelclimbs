@@ -236,10 +236,22 @@ def parse_line(raw, bodyweight_kg=None):
     return e
 
 
+RPE_RE = re.compile(r"^\s*(?:s?rpe|effort)\s*[:=]?\s*(10|[1-9](?:\.5)?)\s*(?:/\s*10)?\s*$", re.I)
+
+
+def parse_rpe(text):
+    """Session effort 1-10 from a line like 'rpe 7' (or 'effort 7/10') in an activity description."""
+    for raw in re.split(r"[\n;]+", text or ""):
+        m = RPE_RE.match(raw)
+        if m:
+            return float(m.group(1))
+    return None
+
+
 def parse_description(text, bodyweight_kg=None):
     out, skipped = [], []
     for raw in re.split(r"[\n;]+", text or ""):
-        if not raw.strip():
+        if not raw.strip() or RPE_RE.match(raw):
             continue
         e = parse_line(raw, bodyweight_kg)
         if e:

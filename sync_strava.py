@@ -15,7 +15,7 @@ Existing entries (including hand-made ones) are kept; nothing is deleted.
 """
 import json, os, re, statistics, sys, time, urllib.parse, urllib.request
 from datetime import date, datetime, timedelta
-from strength_log import parse_description
+from strength_log import parse_description, parse_rpe
 
 API = "https://www.strava.com/api/v3"
 AEROBIC = {"Run", "TrailRun", "VirtualRun", "Walk", "Hike", "StairStepper", "Elliptical", "Snowshoe",
@@ -148,6 +148,7 @@ def main():
             T.update(aet=est, aet_range=[est - 3, d["start_hr"] - 1], aet_measured=False,
                      aet_basis=f"{d['date']} drift test drifted {d['pa_hr_drift_pct']}% at {d['start_hr']} bpm, so AeT is below that; ~{est} until the next test.")
 
+    effort_pass(list(known.values()) + list(sessions.values()), tok)
     data["activities"] = sorted(known.values(), key=lambda a: a["date"], reverse=True)
     data["sessions"] = sorted(sessions.values(), key=lambda a: a["date"], reverse=True)
     data["drift_tests"] = sorted(tests.values(), key=lambda d: d["date"], reverse=True)
@@ -157,6 +158,32 @@ def main():
         json.dump(data, f, indent=1, ensure_ascii=False)
     sync_strength(raw, OTHER, tok)
     print(f"Strava: {len(raw)} activities scanned · {new} new aerobic · AeT {T['aet']} · AnT {T['ant']}")
+
+
+def effort_pass(items, tok, days=21, cap=40):
+    """Session effort (RPE 1-10) for recent activities: an 'rpe 7' line in the description,
+    else Strava's own perceived-exertion slider. Re-read for 3 days in case it's added after the workout."""
+    since = (date.today() - timedelta(days=days)).isoformat()
+    fresh = (date.today() - timedelta(days=3)).isoformat()
+    calls = 0
+    for a in sorted(items, key=lambda x: x["date"], reverse=True):
+        if a["date"] < since or calls >= cap or ("rpe_checked" in a and a["date"] < fresh):
+            continue
+        try:
+            det = http(f"{API}/activities/{a['id']}", token=tok)
+        except Exception as e:  # noqa: BLE001
+            print(f"::notice::Couldn't read activity {a['id']} for effort ({e})")
+            continue
+        calls += 1
+        rpe = parse_rpe(det.get("description") or "")
+        pe = det.get("perceived_exertion")
+        if rpe is None and isinstance(pe, (int, float)) and 1 <= pe <= 10:
+            rpe = float(pe)
+        if rpe is not None:
+            a["rpe"] = rpe
+        a["rpe_checked"] = date.today().isoformat()
+        time.sleep(0.5)
+    print(f"Effort: {calls} activities checked for RPE")
 
 
 def sync_strength(raw, other, tok, path="strength.json"):

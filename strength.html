@@ -82,6 +82,13 @@
     </section>
   </div>
 
+  <section class="card" id="effort">
+    <h2>Weekly effort</h2>
+    <p class="note">Session effort (1–10) × minutes, summed by week across climbing, strength and aerobic sessions, last 12 weeks. A flag marks a week more than 30% above the average of the 4 weeks before it: a rule of thumb for spotting sudden jumps, not a hard limit.</p>
+    <div class="chart" id="eff-chart"><div class="tip"></div></div>
+    <p class="note" id="eff-note"></p>
+  </section>
+
   <section class="card" id="howto">
     <h2>How to log</h2>
     <p class="note">After a session, open it in Strava and type one exercise per line in the description: <b>name, load, sets × reps</b>. The nightly sync reads it. Edits within a week are picked up too.</p>
@@ -106,6 +113,7 @@ high step pass</pre>
         <li><b>Variants:</b> <code>ab wheel standing</code>, <code>ham curl single</code>.</li>
         <li><b>Test week:</b> <code>max hang test 20mm +45lb</code>, <code>2RM pull-up +50lb</code>, <code>repeater test 24 reps</code>, <code>side split 150cm</code>.</li>
         <li><b>Mobility:</b> a distance (<code>pancake 25cm</code>), <code>pass</code> / <code>not yet</code>, or a level (<code>toe touch palms</code>).</li>
+        <li><b>Effort:</b> on any activity (climbing and runs too), add <code>rpe 7</code> on its own line, 1 = very easy, 10 = everything you had. Strava's own effort slider also counts.</li>
         <li>Anything else, like "bicep curl 12kg 3x10", is still logged and charted.</li>
       </ul>
     </div>
