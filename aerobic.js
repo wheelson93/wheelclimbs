@@ -64,7 +64,7 @@
     const h = el('div', 'lab'); h.textContent = `Latest: ${fmtDate(new Date(lt.date + 'T12:00:00'))} · ${lt.name}`;
     h.append(el('span', 'badge' + (pass ? ' ok' : ' due'), lt.pa_hr_drift_pct > 5 ? 'over 5%' : lt.pa_hr_drift_pct >= 3.5 ? 'at AeT' : 'under 3.5%'));
     const dl = el('dl', 'dl');
-    [['Steady segment', `${lt.steady_min} min`], ['HR first → second half', `${lt.hr1} → ${lt.hr2} bpm`], ['Pace:HR drift', `${lt.pa_hr_drift_pct}%`]].forEach(([k, v]) => dl.append(el('dt', null, k), el('dd', null, v)));
+    [['Steady segment', `${lt.steady_min} min`], ...(lt.setting || lt.vert_ft ? [['Setting', [lt.setting, lt.vert_ft ? d3.format(',')(lt.vert_ft) + ' ft' : ''].filter(Boolean).join(' · ')]] : []), ['HR first → second half', `${lt.hr1} → ${lt.hr2} bpm`], [lt.indoor ? 'HR drift (treadmill)' : 'Pace:HR drift', `${lt.pa_hr_drift_pct}%`]].forEach(([k, v]) => dl.append(el('dt', null, k), el('dd', null, v)));
     box.append(h, dl, el('p', 'note', lt.verdict));
   } else box.append(el('p', 'empty', 'No drift test yet.'));
   const T_ = D.thresholds || {}; const RETEST_WEEKS = T_.ant && T_.aet && (T_.ant - T_.aet) / T_.ant > 0.10 ? 4 : 6;

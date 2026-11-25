@@ -23,6 +23,25 @@ AEROBIC = {"Run", "TrailRun", "VirtualRun", "Walk", "Hike", "StairStepper", "Ell
 M_TO_MI, M_TO_FT = 1 / 1609.344, 3.28084
 DRIFT_RE = re.compile(r"drift\s*test|aet\s*test", re.I)
 ANT_RE = re.compile(r"threshold\s*test|ant\s*test|lthr", re.I)
+# Treadmill/stair notes in the description: "1816 vertical", "vert 1,816", "3.7 mph", "10% incline"
+_N = r"(\d{1,2},\d{3}|\d{2,5})"
+VERT_RE = re.compile(_N + r"\s*(?:ft|feet|')?\s*(?:of\s+)?(?:vert(?:ical)?|gain|elev(?:ation)?)\b|\b(?:vert(?:ical)?|gain|elev(?:ation)?)\s*[:=]?\s*" + _N, re.I)
+MPH_RE = re.compile(r"(\d+(?:\.\d+)?)\s*mph", re.I)
+INCL_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%\s*(?:incline|grade)?", re.I)
+
+
+def parse_setting(text):
+    """Vertical and treadmill setting written in an activity description."""
+    out = {}
+    m = VERT_RE.search(text or "")
+    if m:
+        ft = int((m.group(1) or m.group(2)).replace(",", ""))
+        if 50 <= ft <= 20000:
+            out["vert_ft"] = ft
+    bits = [f"{x.group(1)} mph" for x in [MPH_RE.search(text or "")] if x] + [f"{x.group(1)}%" for x in [INCL_RE.search(text or "")] if x]
+    if bits:
+        out["setting"] = " · ".join(bits)
+    return out
 
 
 def http(url, data=None, token=None):
@@ -107,6 +126,10 @@ def main():
                   "sport": a.get("sport") if a.get("sport") == "Alpine" else sport,
                   "mi": round(r.get("distance", 0) * M_TO_MI, 3), "moving_min": round(r.get("moving_time", 0) / 60, 1),
                   "elapsed_min": round(r.get("elapsed_time", 0) / 60, 1), "vert_ft": round(r.get("total_elevation_gain", 0) * M_TO_FT)})
+        if r.get("trainer"):
+            a["indoor"] = True
+        if a.get("vert_desc") and a["vert_ft"] < 50:  # treadmill/stairs: Strava has no elevation, so use the vertical from the description
+            a["vert_ft"] = a["vert_desc"]
         if r.get("average_heartrate"):
             a["avg_hr"] = round(r["average_heartrate"])
         need_streams = r.get("has_heartrate") and ("zones_min" not in a or ((is_drift or is_ant) and aid not in tests))
@@ -119,6 +142,8 @@ def main():
             elif hr:
                 a["hr_note"] = "HR looked like a sensor dropout; excluded from zone totals"
             if is_drift and hr:
+                if r.get("trainer"):  # treadmill: the watch only guesses speed, so score heart-rate drift at the fixed setting
+                    st.pop("velocity_smooth", None)
                 d = drift(st)
                 if d and d["steady_min"] < 40:
                     print(f"::notice::Drift test {aid} only had {d['steady_min']} steady min (need 40+); not scored")
@@ -127,7 +152,8 @@ def main():
                     verdict = (f"Over 5%: {p_}% drift at ~{d['start_hr']} bpm, so AeT is below that. Retest ~5 bpm lower." if p_ > 5
                                else f"Found it: {p_}% drift at ~{d['start_hr']} bpm puts your AeT right there." if p_ >= 3.5
                                else f"Under 3.5%: {p_}% drift at ~{d['start_hr']} bpm, so AeT is higher than that. Retest ~5 bpm higher.")
-                    tests[aid] = {"id": aid, "date": a["date"], "name": name, "sport": sport, "protocol": "test", **d, "verdict": verdict}
+                    tests[aid] = {"id": aid, "date": a["date"], "name": name, "sport": sport, "protocol": "test", **d, "verdict": verdict,
+                                  **({"indoor": True} if r.get("trainer") else {})}
             if is_ant and hr:
                 t = st["time"]
                 test30 = [h for h, tt in zip(hr, t) if tt >= t[-1] - 1800]  # the 30-min effort (recording stops at its end)
@@ -155,6 +181,11 @@ def main():
                      aet_basis=f"{d['date']} drift test drifted {d['pa_hr_drift_pct']}% at {d['start_hr']} bpm, so AeT is below that; ~{est} until the next test.")
 
     effort_pass(list(known.values()) + list(sessions.values()), tok)
+    for d in tests.values():  # show the treadmill setting on the drift-test card
+        if known.get(d["id"], {}).get("setting"):
+            d["setting"] = known[d["id"]]["setting"]
+        if known.get(d["id"], {}).get("vert_desc"):
+            d["vert_ft"] = known[d["id"]]["vert_desc"]
     data["activities"] = sorted(known.values(), key=lambda a: a["date"], reverse=True)
     data["sessions"] = sorted(sessions.values(), key=lambda a: a["date"], reverse=True)
     data["drift_tests"] = sorted(tests.values(), key=lambda d: d["date"], reverse=True)
@@ -168,7 +199,7 @@ def main():
 
 def effort_pass(items, tok, days=21, cap=40):
     """Session effort (RPE 1-10) for recent activities: an 'rpe 7' line in the description,
-    else Strava's own perceived-exertion slider. Re-read for 3 days in case it's added after the workout."""
+    else Strava's own perceived-exertion slider. Also picks up vertical / treadmill settings written there. Re-read for 3 days in case it's added after the workout."""
     since = (date.today() - timedelta(days=days)).isoformat()
     fresh = (date.today() - timedelta(days=3)).isoformat()
     calls = 0
@@ -181,7 +212,16 @@ def effort_pass(items, tok, days=21, cap=40):
             print(f"::notice::Couldn't read activity {a['id']} for effort ({e})")
             continue
         calls += 1
-        rpe = parse_rpe(det.get("description") or "")
+        desc = det.get("description") or ""
+        rpe = parse_rpe(desc)
+        if "mi" in a:  # aerobic activity: vertical / treadmill setting from the description
+            got = parse_setting(desc)
+            if "vert_ft" in got:
+                a["vert_desc"] = got["vert_ft"]
+                if a.get("vert_ft", 0) < 50:
+                    a["vert_ft"] = got["vert_ft"]
+            if "setting" in got:
+                a["setting"] = got["setting"]
         pe = det.get("perceived_exertion")
         if rpe is None and isinstance(pe, (int, float)) and 1 <= pe <= 10:
             rpe = float(pe)
