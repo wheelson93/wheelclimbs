@@ -69,7 +69,35 @@
     if (WK.weekNo === 6) longNote = ' Dress rehearsal: a big Colorado peak at goal-day vertical, full pack, all-day easy pace.';
   }
   if (deload) { longPack = longPack ? lb5(longPack / 2) : 0; longVert = ft100(longVert * 0.6); }
-  LONG.detail = `${Math.floor(longMin / 60)}h${longMin % 60 ? ' ' + (longMin % 60) + 'm' : ''} hike with ~${longVert.toLocaleString()} ft of vert${longPack ? (phase.key === 'base2' ? `, with a light day pack (about ${longPack} lb)` : `, carrying ${longPack} lb (water jugs work: 8 lb a gallon)`) : ''}, mostly under ${z2hi} bpm (you should be able to breathe through your nose).${longNote} North Table, Galbraith or Mt Falcon close to home; bigger peaks when you can.`;
+  // Long-day hike picks within ~1 h of Arvada. mi/vert are round-trip; drive is minutes from Olde Town; months = when it's usually in shape.
+  const ALL = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  const HIKES = [
+    { name: 'North Table Mountain loop', mi: 7, vert: 1000, drive: 15, months: ALL, tip: 'muddy after snowmelt' },
+    { name: 'Mount Galbraith loop', mi: 4.2, vert: 1000, drive: 20, months: ALL },
+    { name: 'Mount Sanitas loop', mi: 3.2, vert: 1300, drive: 30, months: ALL, ice: true },
+    { name: 'Royal Arch', mi: 3.4, vert: 1400, drive: 35, months: ALL, ice: true },
+    { name: 'Mount Morrison', mi: 3.4, vert: 2000, drive: 30, months: ALL, tip: 'steep, hands on rock near the top' },
+    { name: 'Mount Falcon from Morrison (east loop)', mi: 9, vert: 2100, drive: 30, months: ALL },
+    { name: 'Green Mountain via Gregory Canyon & Ranger', mi: 4.7, vert: 2300, drive: 35, months: ALL, ice: true },
+    { name: 'Bear Peak via Fern Canyon (NCAR)', mi: 8, vert: 2850, drive: 35, months: ALL, ice: true },
+    { name: 'South Boulder Peak via Shadow Canyon', mi: 7.8, vert: 2950, drive: 35, months: ALL, ice: true },
+    { name: 'James Peak via St. Mary’s Glacier', mi: 8, vert: 2950, drive: 55, months: [6, 7, 8, 9, 10], tip: 'alpine: start early, off the summit by noon' },
+    { name: 'Grays & Torreys (summer trailhead)', mi: 8.5, vert: 3600, drive: 60, months: [6, 7, 8, 9], tip: '14ers: start early, off the summits by noon' },
+    { name: 'Mount Morrison twice', mi: 6.8, vert: 4000, drive: 30, months: ALL, tip: 'lap it: steep, close, easy to bail' },
+    { name: 'Bear Peak + Green Mountain from NCAR', mi: 11, vert: 4000, drive: 35, months: [4, 5, 6, 7, 8, 9, 10, 11] },
+    { name: 'Grays & Torreys from Bakerville, walking the road', mi: 13.6, vert: 5000, drive: 55, months: [6, 7, 8, 9], tip: 'Exum-sized day at altitude; start early' },
+    { name: 'Boulder Skyline Traverse', mi: 16.7, vert: 5700, drive: 35, months: [5, 6, 7, 8, 9, 10], tip: 'point to point: shuttle or a ride back' },
+  ];
+  const mon = today.getMonth() + 1;
+  const miss = (h) => (h.vert < longVert ? 1.5 : 1) * Math.abs(h.vert - longVert); // coming up short counts more than going a bit over
+  const near = HIKES.filter((h) => h.months.includes(mon)).sort((a, b) => miss(a) - miss(b));
+  const fit = near.filter((h) => h.vert >= longVert * 0.7 && h.vert <= longVert * 1.35);
+  const pool = (fit.length ? fit : near).slice(0, 3);
+  const close = pool.filter((h) => Math.abs(h.vert - longVert) <= longVert * 0.15); // rotate among close matches for variety
+  const hike = close.length > 1 ? close[(WK.weekNo - 1) % close.length] : pool[0], hikeAlt = pool.find((h) => h !== hike);
+  const wintry = [11, 12, 1, 2, 3, 4].includes(mon);
+  const hikeLine = (h) => { const notes = [h.ice && wintry ? 'bring microspikes' : '', h.tip || ''].filter(Boolean).join('; '); return `${h.name} (${h.mi} mi, ~${h.vert.toLocaleString()} ft, ${h.drive} min away${notes ? '; ' + notes : ''})`; };
+  LONG.detail = `${Math.floor(longMin / 60)}h${longMin % 60 ? ' ' + (longMin % 60) + 'm' : ''} hike with ~${longVert.toLocaleString()} ft of vert${longPack ? (phase.key === 'base2' ? `, with a light day pack (about ${longPack} lb)` : `, carrying ${longPack} lb (water jugs work: 8 lb a gallon)`) : ''}, mostly under ${z2hi} bpm (you should be able to breathe through your nose).${longNote} This week: ${hikeLine(hike)}.${hikeAlt ? ` Or ${hikeLine(hikeAlt)}.` : ''}${hike.vert < longVert * 0.85 ? ' Add an extra loop or lap to reach the vert.' : ''}`;
   // Midweek aerobic session by phase.
   let MID = Z2(midMin);
   if (phase.key === 'base1' && !deload) {
@@ -319,7 +347,7 @@
     tile('Aerobic', `${Math.round(doneAer)} / ${weekAer} min`, `Mostly ${z2lo}–${z2hi} bpm`, doneAer >= weekAer),
     tile('Climbing days', `${doneClimb} / ${climbTarget}`, climb.map((c) => c.title.split(' · ')[0].split(' + ')[0]).join(', ').slice(0, 48), doneClimb >= climbTarget),
     tile('Strength', `${doneStr} / 1`, focus.map((k) => AREAS[k][0]).join(' + '), doneStr >= 1),
-    tile('Long day', doneLong ? 'Done' : `${Math.round(longMin / 6) / 10} h`, `~${longVert.toLocaleString()} ft vert${longPack ? ` · ${longPack} lb` : ""}`, doneLong),
+    tile('Long day', doneLong ? 'Done' : `${Math.round(longMin / 6) / 10} h`, `~${longVert.toLocaleString()} ft vert${longPack ? ` · ${longPack} lb` : ""} · ${hike.name.replace(/ \(.*\)$/, '')}`, doneLong),
     tile('Readiness', rToday != null ? `${rToday}/10` : '—', rToday != null ? BAND(rToday) : 'Not logged today', rToday != null && rToday >= 5),
     tile(testDue ? 'Drift test' : 'Next drift test', testDue ? 'Due' : d3.timeFormat('%b %-d')(new Date(new Date(lastTest.date + 'T12:00:00').getTime() + retestDays * DAY)), testDue ? 'Wednesday slot' : `Every ${retestDays / 7} weeks`, false),
   );
