@@ -1,14 +1,14 @@
 {
- "updated": "2026-11-25",
+ "updated": "2026-11-26",
  "source": "Strava API (nightly sync)",
  "thresholds": {
-  "aet": 122,
+  "aet": 130,
   "aet_range": [
-   118,
-   125
+   130,
+   136
   ],
-  "aet_basis": "Estimated from the 2026-07-14 run: 8.8% pace:HR drift at ~129 bpm means AeT sits below that; ~122 is the working estimate until a proper 60-min test.",
-  "aet_measured": false,
+  "aet_basis": "2026-11-25 drift test held 1.2% at 130 bpm, so AeT is at least that; retest ~5 bpm higher.",
+  "aet_measured": true,
   "ant": 166,
   "ant_range": [
    163,
@@ -19,6 +19,21 @@
   "max_hr_est": 187
  },
  "drift_tests": [
+  {
+   "id": "21125700021",
+   "date": "2026-11-25",
+   "name": "Drift Test",
+   "sport": "Walk",
+   "protocol": "test",
+   "steady_min": 47,
+   "hr1": 129.8,
+   "hr2": 131.4,
+   "start_hr": 130,
+   "pa_hr_drift_pct": 1.2,
+   "verdict": "Under 3.5%: 1.2% drift at ~130 bpm, so AeT is higher than that. Retest ~5 bpm higher.",
+   "indoor": true,
+   "vert_ft": 1816
+  },
   {
    "id": "19318339665",
    "date": "2026-07-14",
@@ -35,6 +50,44 @@
  ],
  "activities": [
   {
+   "id": "21124943728",
+   "date": "2026-11-25",
+   "name": "Afternoon Walk",
+   "sport": "Walk",
+   "mi": 0.63,
+   "moving_min": 12.8,
+   "elapsed_min": 15.9,
+   "vert_ft": 20,
+   "avg_hr": 78,
+   "zones_min": [
+    15.9,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "rpe_checked": "2026-11-26"
+  },
+  {
+   "id": "21125700021",
+   "date": "2026-11-25",
+   "name": "Drift Test",
+   "sport": "Walk",
+   "mi": 3.654,
+   "moving_min": 62.2,
+   "elapsed_min": 62.2,
+   "vert_ft": 1816,
+   "indoor": true,
+   "avg_hr": 125,
+   "zones_min": [
+    6.5,
+    7.5,
+    48.3,
+    0.0
+   ],
+   "vert_desc": 1816,
+   "rpe_checked": "2026-11-26"
+  },
+  {
    "id": "21102932723",
    "date": "2026-11-23",
    "name": "Night Walk",
@@ -50,7 +103,7 @@
     0.0,
     0.0
    ],
-   "rpe_checked": "2026-11-25"
+   "rpe_checked": "2026-11-26"
   },
   {
    "id": "21076774603",
@@ -115,7 +168,8 @@
     5.8,
     7.6,
     0.0
-   ]
+   ],
+   "indoor": true
   },
   {
    "id": "20247136605",
@@ -132,7 +186,8 @@
     3.8,
     0.0,
     0.0
-   ]
+   ],
+   "indoor": true
   },
   {
    "id": "20164361161",
@@ -149,7 +204,8 @@
     7.6,
     1.5,
     0.0
-   ]
+   ],
+   "indoor": true
   },
   {
    "id": "20163864999",
@@ -166,7 +222,8 @@
     1.8,
     0.3,
     0.0
-   ]
+   ],
+   "indoor": true
   },
   {
    "id": "19508978492",
@@ -273,7 +330,8 @@
     1.2,
     0.0,
     0.0
-   ]
+   ],
+   "indoor": true
   },
   {
    "id": "15018119956",
@@ -587,7 +645,7 @@
    "sport": "RockClimbing",
    "name": "Boulder & Top Rope",
    "minutes": 94.2,
-   "rpe_checked": "2026-11-25"
+   "rpe_checked": "2026-11-26"
   },
   {
    "id": "20914207776",
@@ -595,7 +653,7 @@
    "sport": "WeightTraining",
    "name": "Afternoon Weight Training",
    "minutes": 39.0,
-   "rpe_checked": "2026-11-25"
+   "rpe_checked": "2026-11-26"
   },
   {
    "id": "20835457878",
