@@ -49,9 +49,12 @@
       svg.append('rect').attr('x', x(a)).attr('y', 8).attr('width', Math.max(0, x(b) - x(a) - 1)).attr('height', 16).attr('rx', 3).style('fill', `var(${c})`).attr('opacity', 0.85);
       if (x(b) - x(a) > 54) svg.append('text').attr('x', (x(a) + x(b)) / 2).attr('y', 40).attr('text-anchor', 'middle').text(n);
     });
-    [[T.aet, 'AeT'], [T.ant, 'AnT']].forEach(([v, n]) => {
-      svg.append('line').attr('x1', x(v)).attr('x2', x(v)).attr('y1', 4).attr('y2', 28).style('stroke', css('--fg')).attr('stroke-width', 2);
-      svg.append('text').attr('x', x(v)).attr('y', 54).attr('text-anchor', 'middle').style('fill', css('--fg')).style('font-weight', 600).text(`${n} ${v}`);
+    // Zone 2 start (AeT − 15) gets a lighter marker; on narrow screens its label and AeT's lean apart so they don't overlap.
+    const z2 = T.aet - 15, tight = x(T.aet) - x(z2) < 90;
+    [[z2, 'Z2', tight ? 'end' : 'middle', 1.5, '--muted'], [T.aet, 'AeT', tight ? 'start' : 'middle', 2, '--fg'], [T.ant, 'AnT', 'middle', 2, '--fg']].forEach(([v, n, anchor, sw, col]) => {
+      svg.append('line').attr('x1', x(v)).attr('x2', x(v)).attr('y1', 4).attr('y2', 28).style('stroke', css(col)).attr('stroke-width', sw);
+      const tx = anchor === 'end' ? x(v) + 6 : anchor === 'start' ? x(v) - 6 : x(v);
+      svg.append('text').attr('x', tx).attr('y', 54).attr('text-anchor', anchor).style('fill', css(col)).style('font-weight', 600).text(`${n} ${v}`);
     });
   })();
 
