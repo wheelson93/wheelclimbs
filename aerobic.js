@@ -44,7 +44,7 @@
     const W = box.clientWidth || 400, H = 56, lo = 90, hi = T.max_hr_est || 190;
     const x = d3.scaleLinear([lo, hi], [4, W - 4]);
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
-    const bands = [[lo, T.aet - 15, '--c4', 'Recovery'], [T.aet - 15, T.aet, '--c2', 'Zone 2'], [T.aet, T.ant, '--c3', 'Gray zone'], [T.ant, hi, '--c0', 'Above AnT']];
+    const bands = [[lo, T.aet - 15, '--c1', 'Recovery'], [T.aet - 15, T.aet, '--c2', 'Zone 2'], [T.aet, T.ant, '--muted', 'Gray zone'], [T.ant, hi, '--c0', 'Above AnT']];
     bands.forEach(([a, b, c, n]) => {
       svg.append('rect').attr('x', x(a)).attr('y', 8).attr('width', Math.max(0, x(b) - x(a) - 1)).attr('height', 16).attr('rx', 3).style('fill', `var(${c})`).attr('opacity', 0.85);
       if (x(b) - x(a) > 54) svg.append('text').attr('x', (x(a) + x(b)) / 2).attr('y', 40).attr('text-anchor', 'middle').text(n);
@@ -114,7 +114,7 @@
 
   // ---- intensity mix ----
   (function () {
-    const Z = [['--c4', 'Recovery'], ['--c2', 'Zone 2 (base)'], ['--c3', 'Gray zone'], ['--c0', 'Above AnT']];
+    const Z = [['--c1', 'Recovery'], ['--c2', 'Zone 2 (base)'], ['--muted', 'Gray zone'], ['--c0', 'Above AnT']];
     legendFill($('#int-legend'), Z);
     const rows = acts.filter((a) => a.zones_min).slice(-10).reverse();
     const max = d3.max(rows, (a) => d3.sum(a.zones_min)) || 1;
