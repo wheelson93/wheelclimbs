@@ -39,7 +39,7 @@
   const round15 = (m) => Math.round(m / 15) * 15;
   const aerTarget = round15(Math.min(phase.aerCap || 360, Math.max(90, round15(aerMin4 * 1.2))) * volFactor);
   const midMin = Math.max(40, round15(aerTarget * (1 - (phase.longShare || 0.6))));
-  const longMin = Math.max(60, aerTarget - midMin);
+  let longMin = Math.max(60, aerTarget - midMin);
   const vertTarget = Math.round((longMin / 60) * 600 / 100) * 100;
   const lastTest = (D.drift_tests || []).slice().sort((a, b) => (a.date < b.date ? 1 : -1))[0];
   // Drift test every 4 weeks while AeT is more than 10% below AnT (base still building), otherwise every 6.
@@ -69,6 +69,9 @@
     if (WK.weekNo === 6) longNote = ' Dress rehearsal: a big Colorado peak at goal-day vertical, full pack, all-day easy pace.';
   }
   if (deload) { longPack = longPack ? lb5(longPack / 2) : 0; longVert = ft100(longVert * 0.6); }
+  // Build sets vert from the goal, so size the time from the vert: ~1,000 ft/h up with a pack at Zone 2, ~2,000 ft/h down.
+  const longByVert = phase.key === 'build1' && round15((longVert / 1000 + longVert / 2000) * 60) > longMin;
+  if (longByVert) { longMin = round15((longVert / 1000 + longVert / 2000) * 60); LONG.min = longMin; }
   // Long-day hike picks within ~1 h of Arvada. mi/vert are round-trip; drive is minutes from Olde Town; months = when it's usually in shape.
   const ALL = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const HIKES = [
@@ -374,7 +377,7 @@
 
   // ---------- why ----------
   const why = [
-    `Aerobic target is ${weekAer} min${testDue ? ' (the drift test adds to the usual ' + aerTarget + ')' : ''}: your last 4 weeks averaged ${Math.round(aerMin4)} min/week. The plan adds about 20% (with a 90-min floor) so the base grows without a jump that leaves you flat for climbing.`,
+    `Aerobic target is ${weekAer} min${testDue ? ' (the drift test adds to the usual ' + aerTarget + ')' : ''}: your last 4 weeks averaged ${Math.round(aerMin4)} min/week. The plan adds about 20% (with a 90-min floor) so the base grows without a jump that leaves you flat for climbing.${longByVert ? ` In Build the long day is sized by its vertical instead (about 1,000 ft an hour up and 2,000 down), so it runs ${Math.round(longMin / 6) / 10} h and lifts the weekly total.` : ''}`,
     `Zone 2 on this site is everything under ${z2hi} bpm, your estimated aerobic threshold (what Training for the New Alpinism calls Zone 1). Your AeT is ${Math.round(adGap * 100)}% below your AnT (${T.ant}); ${baseReady ? 'that is within 10%, so the base can support Zone 3 hill climbs.' : 'until that gap is under about 10%, the base needs more easy volume and the plan holds off on Zone 3 hill work.'}`,
     testDue ? `Wednesday is a drift test, not ordinary zone 2: your last check was ${lastTest ? (lastTest.protocol === 'test' ? `over ${retestDays / 7} weeks ago` : 'an informal run in ' + d3.timeFormat('%B')(new Date(lastTest.date + 'T12:00:00'))) : 'never'}, and a measured threshold makes every zone on this page accurate.` : `No drift test this week; the next one is 6 weeks after the last.`,
     easeIn ? `Climbing has been light (${climbs4.toFixed(1)} days/week lately), so the gym day is a volume-and-falling session rather than a max effort.` : `You've been climbing about ${climbs4.toFixed(1)} days/week, so the plan holds two quality days with rest between.`,
