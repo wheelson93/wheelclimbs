@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26",
+ "updated": "2026-11-27",
  "source": "Strava API (nightly sync)",
  "thresholds": {
   "aet": 130,
@@ -65,7 +65,7 @@
     0.0,
     0.0
    ],
-   "rpe_checked": "2026-11-26"
+   "rpe_checked": "2026-11-27"
   },
   {
    "id": "21125700021",
@@ -85,7 +85,7 @@
     0.0
    ],
    "vert_desc": 1816,
-   "rpe_checked": "2026-11-26"
+   "rpe_checked": "2026-11-27"
   },
   {
    "id": "21102932723",
@@ -645,7 +645,7 @@
    "sport": "RockClimbing",
    "name": "Boulder & Top Rope",
    "minutes": 94.2,
-   "rpe_checked": "2026-11-26"
+   "rpe_checked": "2026-11-27"
   },
   {
    "id": "20914207776",
@@ -653,7 +653,7 @@
    "sport": "WeightTraining",
    "name": "Afternoon Weight Training",
    "minutes": 39.0,
-   "rpe_checked": "2026-11-26"
+   "rpe_checked": "2026-11-27"
   },
   {
    "id": "20835457878",
