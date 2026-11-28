@@ -368,13 +368,14 @@
   const isLong = (p) => /long day/i.test(p.title);
   const want = (x) => (x.p.kind === 'drift' ? (q) => q.kind === 'drift' || (q.kind === 'aerobic' && q.min >= 40)
     : isLong(x.p) ? (q) => q.kind === 'aerobic' && q.min >= x.p.min * 0.8
-    : x.p.kind === 'aerobic' ? (q) => q.kind === 'aerobic' && q.min >= Math.min(20, x.p.min * 0.5)
+    : x.p.kind === 'aerobic' ? (q) => (q.kind === 'aerobic' || q.kind === 'drift') && q.min >= x.p.min * 0.5
     : (q) => q.kind === x.p.kind);
   // Most specific first (drift, long day), then the rest; prefer the planned day, then the nearest day.
   [...items].sort((a, b) => (b.p.kind === 'drift') - (a.p.kind === 'drift') || isLong(b.p) - isLong(a.p)).forEach((x) => {
     const ok = want(x), cands = logPool.filter((q) => !q.used && ok(q));
     if (!cands.length) return;
-    const best = cands.sort((a, b) => (b.kind === x.p.kind) - (a.kind === x.p.kind) || (x.i < 0 ? 0 : Math.abs(a.i - x.i) - Math.abs(b.i - x.i)) || b.min - a.min)[0];
+    const same = (q) => q.kind === x.p.kind || (x.p.kind === 'aerobic' && q.kind === 'drift');
+    const best = cands.sort((a, b) => same(b) - same(a) || (x.i < 0 ? 0 : Math.abs(a.i - x.i) - Math.abs(b.i - x.i)) || b.min - a.min)[0];
     best.used = x.p.title; x.hit = best;
   });
   const dname = (i) => d3.timeFormat('%a')(days[i]);
