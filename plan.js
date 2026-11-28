@@ -283,8 +283,7 @@
     for (const [key, sess, hard] of sessionsWanted) {
       let best = -1, bestScore = 0;
       days.forEach((d, i) => {
-        if (plan[i]) return;
-        if (d < today) return;
+        if (plan[i]) return; // the whole week is planned from Monday, so sessions stay put as days pass
         let sc = FIT[key][avail[i]] || 0;
         if (!sc) return;
         if (hard && (hardOn.has(i - 1) || hardOn.has(i + 1))) return;
@@ -292,7 +291,7 @@
         if (sc > bestScore) { bestScore = sc; best = i; }
       });
       if (best >= 0) { plan[best] = sess; if (hard) hardOn.add(best); }
-      else unplaced.push(sess.title);
+      else unplaced.push(sess);
     }
     plan = plan.map((p, i) => p || REST(avail[i] === 'evening' ? 'Rest (work day)' : 'Rest / easy'));
   } else {
@@ -355,25 +354,67 @@
     tile(testDue ? 'Drift test' : 'Next drift test', testDue ? 'Due' : d3.timeFormat('%b %-d')(new Date(new Date(lastTest.date + 'T12:00:00').getTime() + retestDays * DAY)), testDue ? 'Wednesday slot' : `Every ${retestDays / 7} weeks`, false),
   );
 
-  // ---------- day list ----------
-  const list = $('#day-list');
-  days.forEach((d, i) => {
-    const p = plan[i], w = weekActs[i];
-    const hit = p.kind === 'rest' ? null : (w[p.kind] || []).length ? w[p.kind] : p.kind === 'drift' && w.aerobic.length ? w.aerobic : null;
-    const anyOther = !hit && p.kind !== 'rest' && (w.aerobic.length || w.climb.length || w.strength.length);
-    const status = hit ? 'done' : +d === +today ? 'today' : d < today ? (p.kind === 'rest' ? 'rest' : anyOther ? 'swapped' : 'missed') : 'up';
-    const row = el('div', 'pl-row ' + status + (p.kind === 'rest' ? ' is-rest' : ''));
-    const left = el('div', 'pl-day'); left.append(el('div', 'dn', d3.timeFormat('%a')(d)), el('div', 'dd', d3.timeFormat('%-d')(d)));
-    if (known) left.append(el('div', 'av av-' + avail[i], AVLAB[avail[i]]));
+  // ---------- planned sessions, matched to what got logged (any day this week) ----------
+  // Each logged activity can check off one planned session. A session done on another day still counts, and
+  // anything not done yet stays on the list so it can be picked up later in the week.
+  const dayOf = (dateStr) => days.findIndex((d) => iso(d) === dateStr);
+  const logPool = [];
+  weekActs.forEach((w, i) => {
+    w.aerobic.forEach((a) => logPool.push({ kind: /drift/i.test(a.name || '') ? 'drift' : 'aerobic', i, a, min: a.moving_min || a.elapsed_min || 0 }));
+    if (w.climb.length) logPool.push({ kind: 'climb', i, a: w.climb[0], all: w.climb, min: d3.sum(w.climb, (c) => c.minutes || 0) });
+    w.strength.forEach((a) => logPool.push({ kind: 'strength', i, a, min: a.minutes || 0 }));
+  });
+  const items = [...plan.map((p, i) => ({ p, i })), ...unplaced.map((p) => ({ p, i: -1 }))].filter((x) => x.p.kind !== 'rest');
+  const isLong = (p) => /long day/i.test(p.title);
+  const want = (x) => (x.p.kind === 'drift' ? (q) => q.kind === 'drift' || (q.kind === 'aerobic' && q.min >= 40)
+    : isLong(x.p) ? (q) => q.kind === 'aerobic' && q.min >= x.p.min * 0.8
+    : x.p.kind === 'aerobic' ? (q) => q.kind === 'aerobic' && q.min >= Math.min(20, x.p.min * 0.5)
+    : (q) => q.kind === x.p.kind);
+  // Most specific first (drift, long day), then the rest; prefer the planned day, then the nearest day.
+  [...items].sort((a, b) => (b.p.kind === 'drift') - (a.p.kind === 'drift') || isLong(b.p) - isLong(a.p)).forEach((x) => {
+    const ok = want(x), cands = logPool.filter((q) => !q.used && ok(q));
+    if (!cands.length) return;
+    const best = cands.sort((a, b) => (b.kind === x.p.kind) - (a.kind === x.p.kind) || (x.i < 0 ? 0 : Math.abs(a.i - x.i) - Math.abs(b.i - x.i)) || b.min - a.min)[0];
+    best.used = x.p.title; x.hit = best;
+  });
+  const dname = (i) => d3.timeFormat('%a')(days[i]);
+  const row = (x, label) => {
+    const { p, i, hit } = x, d = i >= 0 ? days[i] : null;
+    const status = p.kind === 'rest' ? (d && d < today ? 'rest' : 'up') : hit ? 'done' : d && +d === +today ? 'today' : d && d < today ? 'open' : 'up';
+    const r = el('div', 'pl-row ' + status + (p.kind === 'rest' ? ' is-rest' : ''));
+    const left = el('div', 'pl-day');
+    if (d) { left.append(el('div', 'dn', d3.timeFormat('%a')(d)), el('div', 'dd', d3.timeFormat('%-d')(d))); if (known) left.append(el('div', 'av av-' + avail[i], AVLAB[avail[i]])); }
+    else left.append(el('div', 'dn', label));
     const main = el('div', 'pl-main');
     const h = el('div', 'pl-title'); h.append(el('span', 'k k-' + p.kind), document.createTextNode(p.title));
     main.append(h, el('div', 'pl-detail', p.detail));
-    const logged = [...w.aerobic, ...w.climb, ...w.strength];
-    if (logged.length) main.append(el('div', 'pl-log', 'Logged: ' + logged.map((a) => (a.name || a.Route) + (a.moving_min ? ` (${Math.round(a.moving_min)} min)` : a.minutes ? ` (${Math.round(a.minutes)} min)` : '')).join(' · ')));
-    const badge = { done: '✓ done', today: 'today', missed: 'missed', swapped: 'swapped', rest: '', up: '' }[status];
-    const r = el('div', 'pl-status'); if (badge) r.append(el('span', 'badge ' + (status === 'done' ? 'ok' : status === 'today' ? 'due' : ''), badge));
-    row.append(left, main, r); list.append(row);
-  });
+    const txt = { done: hit && hit.i !== i ? `✓ done ${dname(hit.i)}` : '✓ done', today: 'today', open: 'not done yet', rest: '', up: '' }[status];
+    const st = el('div', 'pl-status'); if (txt) st.append(el('span', 'badge ' + (status === 'done' ? 'ok' : status === 'today' ? 'due' : ''), txt));
+    r.append(left, main, st); return r;
+  };
+  const list = $('#day-list');
+  list.replaceChildren(...days.map((d, i) => row(items.find((x) => x.i === i) || { p: plan[i], i })));
+  const extra = items.filter((x) => x.i < 0);
+  if (extra.length) { list.append(el('div', 'pl-sub', 'If a day opens up')); extra.forEach((x) => list.append(row(x, 'Any'))); }
+
+  // ---------- what actually got logged ----------
+  const didList = $('#did-list');
+  const fmtMin = (m) => (m ? ` · ${Math.round(m)} min` : '');
+  const desc = (q) => q.kind === 'climb'
+    ? (q.all.find((c) => c.name) ? `${q.all.find((c) => c.name).name}${fmtMin(q.min)}` : `${q.all.length} tick${q.all.length === 1 ? '' : 's'}: ${q.all.map((t) => t.Route).filter(Boolean).slice(0, 3).join(', ')}`)
+    : `${q.a.name || q.a.sport}${fmtMin(q.min)}${q.a.vert_ft >= 50 ? ` · ${q.a.vert_ft.toLocaleString()} ft` : ''}${q.a.avg_hr ? ` · avg ${q.a.avg_hr} bpm` : ''}`;
+  const did = days.map((d, i) => ({ d, i, qs: logPool.filter((q) => q.i === i) })).filter((x) => x.qs.length);
+  didList.replaceChildren(...(did.length ? did.map(({ d, qs }) => {
+    const r = el('div', 'did-row');
+    const left = el('div', 'pl-day'); left.append(el('div', 'dn', d3.timeFormat('%a')(d)), el('div', 'dd', d3.timeFormat('%-d')(d)));
+    const main = el('div', 'did-main');
+    qs.forEach((q) => {
+      const line = el('div', 'did-item'); line.append(el('span', 'k k-' + (q.kind === 'drift' ? 'drift' : q.kind)), document.createTextNode(desc(q)));
+      if (q.used) line.append(el('span', 'did-for', '→ ' + q.used));
+      main.append(line);
+    });
+    r.append(left, main); return r;
+  }) : [el('p', 'note', 'Nothing logged yet this week. Strava and Mountain Project sync overnight.')]));
 
   // ---------- why ----------
   const why = [
@@ -383,7 +424,7 @@
     easeIn ? `Climbing has been light (${climbs4.toFixed(1)} days/week lately), so the gym day is a volume-and-falling session rather than a max effort.` : `You've been climbing about ${climbs4.toFixed(1)} days/week, so the plan holds two quality days with rest between.`,
     (dt(phase.to) - today) / DAY < 10 && nextPhase !== phase ? `This is the last stretch of ${phase.name.split(' · ')[1]}. ${nextPhase.name} starts ${d3.timeFormat('%b %-d')(dt(nextPhase.from))}.` : `Next phase: ${nextPhase.name}, from ${d3.timeFormat('%b %-d')(dt(nextPhase.from))}. Goals: ${WC.goals.exum.short} in July, ${WC.goals.g512.short} by mid-November.`,
   ];
-  if (known) why.unshift(`Scheduled around your work calendar: ${avail.filter((a) => a === 'open').length} open day${avail.filter((a) => a === 'open').length === 1 ? '' : 's'} this week, so ${unplaced.length ? 'some sessions didn\'t fit: ' + unplaced.join(', ') + '. Do them if a day opens up, or let them go; the week still counts' : 'everything fits'}. Nothing lands on a recovery day, and hard climbing days aren't back to back.`);
+  if (known) why.unshift(`Scheduled around your work calendar: ${avail.filter((a) => a === 'open').length} open day${avail.filter((a) => a === 'open').length === 1 ? '' : 's'} this week, so ${unplaced.length ? 'some sessions didn\'t fit: ' + unplaced.map((u) => u.title).join(', ') + '. They\'re listed under “If a day opens up”; do them or let them go, the week still counts' : 'everything fits'}. Nothing lands on a recovery day, and hard climbing days aren't back to back.`);
   else why.unshift('No work schedule loaded for this week yet, so this is the default layout. Move sessions around shifts as needed.');
   if (deload) why.unshift(`Deload week (week ${WK.weekNo} of ${phase.name.split(' · ')[0]}): the plan runs 3 building weeks then 1 lighter one. Aerobic is about 60% of normal and every session is roughly half volume, so the next block starts fresh.`);
   else if (['base', 'build'].includes(phase.type) && phase.cycle !== 'now') {
